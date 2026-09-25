@@ -131,7 +131,8 @@ const Field = ({
     </View>
     <View className="mt-2">
       <Textarea
-        className="min-h-16 bg-secondary bg-opacity-70 border-transparent rounded-xl text-lg"
+        className="min-h-16 border-transparent rounded-xl text-lg"
+        style={{ backgroundColor: 'rgba(239,236,228,0.7)' }}
         value={value}
         autoHeight
         onInput={e => onChange(e.detail.value)}

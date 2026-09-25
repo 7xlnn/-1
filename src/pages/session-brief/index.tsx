@@ -84,7 +84,7 @@ const SessionBriefPage = () => {
               <Text key={i} className="block text-lg leading-relaxed text-muted-foreground">· {h}</Text>
             ))}
           </View>
-          <View className="mt-3 bg-secondary bg-opacity-70 rounded-xl p-3">
+          <View className="mt-3 rounded-xl p-3" style={{ backgroundColor: 'rgba(239,236,228,0.7)' }}>
             <Text className="block text-lg leading-relaxed text-foreground">会谈后作业：{session.homework}</Text>
           </View>
         </View>
@@ -94,7 +94,7 @@ const SessionBriefPage = () => {
             <MessageCircle size={15} color="#5B8C7B" />
             <Text className="text-lg font-semibold text-foreground">来访者此刻状态</Text>
           </View>
-          <View className="mt-3 bg-secondary bg-opacity-70 rounded-xl p-3">
+          <View className="mt-3 rounded-xl p-3" style={{ backgroundColor: 'rgba(239,236,228,0.7)' }}>
             <Text className="block text-lg leading-relaxed text-foreground">{session.clientState}</Text>
           </View>
           <View className="mt-2 flex flex-row">

@@ -22,11 +22,11 @@ const CaseDetailPage = () => {
           <UserRound size={18} color="#ffffff" />
           <Text className="text-white text-lg font-bold">{c.title}</Text>
         </View>
-        <Text className="block text-white text-opacity-85 text-lg mt-2 leading-relaxed">
+        <Text className="block text-lg mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>
           {c.theme} · {c.sessions.length} 次会谈 · {c.difficulty}
         </Text>
-        <View className="mt-3 bg-white bg-opacity-12 rounded-xl p-3">
-          <Text className="block text-white text-opacity-90 text-lg leading-relaxed">{c.description}</Text>
+        <View className="mt-3 rounded-xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+          <Text className="block text-white leading-relaxed text-lg">{c.description}</Text>
         </View>
       </View>
 
@@ -71,7 +71,7 @@ const CaseDetailPage = () => {
             className="bg-card rounded-2xl border border-border p-4 mb-3 shadow-sm flex flex-row items-center"
             onClick={() => Taro.navigateTo({ url: `/pages/session-brief/index?caseId=${c.id}&index=${s.index}` })}
           >
-            <View className="w-9 h-9 rounded-full bg-primary bg-opacity-10 flex items-center justify-center flex-shrink-0">
+            <View className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
               <Text className="text-lg font-semibold text-primary">{s.index}</Text>
             </View>
             <View className="flex-1 px-3">

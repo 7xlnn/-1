@@ -84,17 +84,17 @@ const FragmentBriefPage = () => {
             <InfoRow label="性别" value={ex.client.gender} />
             <InfoRow label="职业" value={ex.client.occupation} />
           </View>
-          <View className="mt-3 bg-secondary bg-opacity-70 rounded-xl p-3">
+          <View className="mt-3 rounded-xl p-3" style={{ backgroundColor: 'rgba(239,236,228,0.7)' }}>
             <Text className="block text-lg leading-relaxed text-foreground">主诉：{ex.client.chiefComplaint}</Text>
           </View>
-          <View className="mt-2 bg-primary bg-opacity-5 rounded-xl p-3">
+          <View className="mt-2 rounded-xl p-3" style={{ backgroundColor: 'rgba(91,140,123,0.05)' }}>
             <Text className="block text-lg leading-relaxed text-foreground">背景：{ex.client.background}</Text>
           </View>
         </View>
 
         {/* 结束后任务说明 */}
         {isConcept && (
-          <View className="bg-secondary bg-opacity-70 rounded-2xl p-4 mt-3 flex flex-row items-start gap-2">
+          <View className="rounded-2xl p-4 mt-3 flex flex-row items-start gap-2" style={{ backgroundColor: 'rgba(239,236,228,0.7)' }}>
             <Lightbulb size={15} color="#5B8C7B" />
             <Text className="block flex-1 text-lg leading-relaxed text-muted-foreground">
               对话结束后，请依据访谈内容填写横向与纵向概念化，提交后再由督导点评。

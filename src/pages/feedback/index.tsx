@@ -137,12 +137,12 @@ const FeedbackPage = () => {
     <View className="min-h-full bg-background pb-10">
       {/* 评分头部 */}
       <View className="bg-primary px-5 pt-10 pb-8 rounded-b-3xl flex flex-row items-center gap-4">
-        <View className="w-16 h-16 rounded-full bg-white bg-opacity-15 border-2 border-white border-opacity-40 flex items-center justify-center">
+        <View className="w-16 h-16 rounded-full border-2 flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.4)' }}>
           <Text className="text-white text-2xl font-bold">{avg ?? '—'}</Text>
         </View>
         <View className="flex-1">
           <Text className="block text-white text-lg font-bold">督导反馈</Text>
-          <Text className="block text-white text-opacity-85 text-base mt-1 leading-relaxed">{title}</Text>
+          <Text className="block text-base mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>{title}</Text>
         </View>
       </View>
 

@@ -19,7 +19,7 @@ const IndexPage = () => {
           <Leaf size={20} color="#ffffff" />
           <Text className="text-white text-lg font-bold">CBT 练心场</Text>
         </View>
-        <Text className="block text-white text-opacity-90 text-lg mt-3 leading-relaxed">
+        <Text className="block text-lg mt-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.9)' }}>
           在安全的模拟咨询室里，{'\n'}把 CBT 的每一项技术练成你的本能。
         </Text>
       </View>
@@ -28,7 +28,7 @@ const IndexPage = () => {
         {/* 模块一 */}
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm">
           <View className="flex flex-row items-center gap-3">
-            <View className="w-9 h-9 rounded-xl bg-primary bg-opacity-10 flex items-center justify-center">
+            <View className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
               <Layers size={18} color="#5B8C7B" />
             </View>
             <View className="flex-1">
@@ -121,7 +121,7 @@ const IndexPage = () => {
         </View>
 
         {/* 理念卡 */}
-        <View className="mt-4 bg-secondary bg-opacity-70 rounded-2xl p-4 flex flex-row items-start gap-3">
+        <View className="mt-4 rounded-2xl p-4 flex flex-row items-start gap-3" style={{ backgroundColor: 'rgba(239,236,228,0.7)' }}>
           <Sparkles size={16} color="#5B8C7B" />
           <Text className="block flex-1 text-lg leading-relaxed text-muted-foreground">
             每个练习都有 AI 扮演的来访者与你对话，结束后由“督导”依据 CBT 专业标准给出反馈。建议按基本技术 → 概念化 → 自动思维 → 信念工作的顺序练习。

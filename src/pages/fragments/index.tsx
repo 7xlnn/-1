@@ -20,7 +20,7 @@ const FragmentsPage = () => {
     <View className="min-h-full bg-background">
       <View className="bg-primary px-5 pt-10 pb-8 rounded-b-3xl">
         <Text className="block text-white text-lg font-bold">{group.name}</Text>
-        <Text className="block text-white text-opacity-85 text-lg mt-2 leading-relaxed">{group.desc}</Text>
+        <Text className="block text-lg mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>{group.desc}</Text>
       </View>
 
       <View className="px-4 -mt-4">
