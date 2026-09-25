@@ -65,7 +65,7 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
         <View className="flex flex-col gap-4 pb-4">
           {messages.length === 0 && (
             <View className="py-10 text-center">
-              <Text className="block text-sm text-muted-foreground">
+              <Text className="block text-lg text-muted-foreground">
                 咨询开始，主动和来访者打个招呼吧
               </Text>
             </View>
@@ -74,16 +74,16 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
             m.role === 'assistant' ? (
               <View key={i} className="flex flex-row items-start gap-2">
                 <View className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                  <Text className="text-xs text-muted-foreground">{profile?.name.slice(0, 1)}</Text>
+                  <Text className="text-lg text-muted-foreground">{profile?.name.slice(0, 1)}</Text>
                 </View>
                 <View className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 max-w-[78%]">
-                  <Text className="block text-sm leading-relaxed text-foreground">{m.content}</Text>
+                  <Text className="block text-lg leading-relaxed text-foreground">{m.content}</Text>
                 </View>
               </View>
             ) : (
               <View key={i} className="flex flex-row items-start justify-end gap-2">
                 <View className="bg-primary rounded-2xl rounded-tr-sm px-4 py-3 max-w-[78%]">
-                  <Text className="block text-sm leading-relaxed text-primary-foreground">{m.content}</Text>
+                  <Text className="block text-lg leading-relaxed text-primary-foreground">{m.content}</Text>
                 </View>
               </View>
             )
@@ -91,10 +91,10 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
           {loading && (
             <View className="flex flex-row items-center gap-2">
               <View className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                <Text className="text-xs text-muted-foreground">{profile?.name.slice(0, 1)}</Text>
+                <Text className="text-lg text-muted-foreground">{profile?.name.slice(0, 1)}</Text>
               </View>
               <View className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
-                <Text className="text-xs text-muted-foreground">来访者正在输入…</Text>
+                <Text className="text-lg text-muted-foreground">来访者正在输入…</Text>
               </View>
             </View>
           )}
@@ -105,7 +105,7 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
         <View className="flex flex-row items-center gap-2">
           <View className="flex-1 bg-secondary rounded-full px-4 py-2">
             <Input
-              className="w-full text-sm"
+              className="w-full text-lg"
               placeholder="输入你想对来访者说的话…"
               value={input}
               confirmType="send"
@@ -120,7 +120,7 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
         <View className="mt-2 flex justify-center">
           <Button variant="ghost" size="sm" onClick={() => Taro.navigateTo({ url: endUrl })}>
             <Flag size={15} color="#6E756E" />
-            <Text className="text-xs text-muted-foreground ml-1">{endLabel}</Text>
+            <Text className="text-lg text-muted-foreground ml-1">{endLabel}</Text>
           </Button>
         </View>
       </View>

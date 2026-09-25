@@ -13,7 +13,7 @@ const FragmentBriefPage = () => {
   if (!ex) {
     return (
       <View className="p-6">
-        <Text className="text-sm text-muted-foreground">未找到该练习</Text>
+        <Text className="text-lg text-muted-foreground">未找到该练习</Text>
       </View>
     )
   }
@@ -43,24 +43,24 @@ const FragmentBriefPage = () => {
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm">
           <View className="flex flex-row items-center gap-2">
             <ListChecks size={16} color="#5B8C7B" />
-            <Text className="text-sm font-semibold text-foreground">本次任务</Text>
+            <Text className="text-lg font-semibold text-foreground">本次任务</Text>
           </View>
-          <Text className="block text-xs leading-relaxed text-foreground mt-3">{ex.briefing}</Text>
+          <Text className="block text-lg leading-relaxed text-foreground mt-3">{ex.briefing}</Text>
         </View>
 
         {/* 知识卡 */}
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3">
           <View className="flex flex-row items-center gap-2">
             <BookOpen size={16} color="#5B8C7B" />
-            <Text className="text-sm font-semibold text-foreground">练习要点</Text>
+            <Text className="text-lg font-semibold text-foreground">练习要点</Text>
           </View>
           <View className="mt-3 flex flex-col gap-3">
             {ex.points.map((p, i) => (
               <View key={i}>
-                <Text className="block text-xs font-medium text-foreground">{p.title}</Text>
-                <Text className="block text-xs leading-relaxed text-muted-foreground mt-1">{p.desc}</Text>
+                <Text className="block text-lg font-medium text-foreground">{p.title}</Text>
+                <Text className="block text-lg leading-relaxed text-muted-foreground mt-1">{p.desc}</Text>
                 {p.example && (
-                  <Text className="block text-[11px] text-primary mt-1 leading-relaxed">{p.example}</Text>
+                  <Text className="block text-sm text-primary mt-1 leading-relaxed">{p.example}</Text>
                 )}
               </View>
             ))}
@@ -71,7 +71,7 @@ const FragmentBriefPage = () => {
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3">
           <View className="flex flex-row items-center gap-2">
             <MessageCircle size={16} color="#5B8C7B" />
-            <Text className="text-sm font-semibold text-foreground">来访者档案</Text>
+            <Text className="text-lg font-semibold text-foreground">来访者档案</Text>
           </View>
           <View className="mt-3 flex flex-col gap-2">
             <InfoRow label="姓名" value={ex.client.name} />
@@ -80,10 +80,10 @@ const FragmentBriefPage = () => {
             <InfoRow label="职业" value={ex.client.occupation} />
           </View>
           <View className="mt-3 bg-secondary bg-opacity-70 rounded-xl p-3">
-            <Text className="block text-xs leading-relaxed text-foreground">主诉：{ex.client.chiefComplaint}</Text>
+            <Text className="block text-lg leading-relaxed text-foreground">主诉：{ex.client.chiefComplaint}</Text>
           </View>
           <View className="mt-2 bg-primary bg-opacity-5 rounded-xl p-3">
-            <Text className="block text-xs leading-relaxed text-foreground">背景：{ex.client.background}</Text>
+            <Text className="block text-lg leading-relaxed text-foreground">背景：{ex.client.background}</Text>
           </View>
         </View>
 
@@ -91,7 +91,7 @@ const FragmentBriefPage = () => {
         {isConcept && (
           <View className="bg-secondary bg-opacity-70 rounded-2xl p-4 mt-3 flex flex-row items-start gap-2">
             <Lightbulb size={15} color="#5B8C7B" />
-            <Text className="block flex-1 text-xs leading-relaxed text-muted-foreground">
+            <Text className="block flex-1 text-lg leading-relaxed text-muted-foreground">
               对话结束后，请依据访谈内容填写横向与纵向概念化，提交后再由督导点评。
             </Text>
           </View>
@@ -100,7 +100,7 @@ const FragmentBriefPage = () => {
 
       <View className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-3">
         <Button className="w-full rounded-full" onClick={handleStart}>
-          <Text className="text-sm text-primary-foreground">进入咨询室</Text>
+          <Text className="text-lg text-primary-foreground">进入咨询室</Text>
         </Button>
       </View>
     </View>
@@ -109,8 +109,8 @@ const FragmentBriefPage = () => {
 
 const InfoRow = ({ label, value }: { label: string; value: string }) => (
   <View className="flex flex-row">
-    <Text className="text-xs text-muted-foreground w-10">{label}</Text>
-    <Text className="block flex-1 text-xs text-foreground">{value}</Text>
+    <Text className="text-lg text-muted-foreground w-10">{label}</Text>
+    <Text className="block flex-1 text-lg text-foreground">{value}</Text>
   </View>
 )
 

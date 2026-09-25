@@ -22,7 +22,7 @@ const Textarea = React.forwardRef<
   return (
     <View
       className={cn(
-        "flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 ring-offset-background focus-within:border-ring focus-within:ring-4 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
+        "flex h-24 w-full rounded-md border border-input bg-background px-3 py-2 ring-offset-background focus-within:border-ring focus-within:ring-4 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
         isFocused && "border-ring ring-4 ring-ring ring-offset-2 ring-offset-background",
         className
       )}
@@ -32,7 +32,7 @@ const Textarea = React.forwardRef<
       }}
     >
       <TaroTextarea
-        className="flex-1 w-full h-full bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm selection:bg-selection selection:text-selection-foreground"
+        className="flex-1 w-full h-full bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-base selection:bg-selection selection:text-selection-foreground"
         placeholderClass="text-muted-foreground"
         ref={ref}
         focus={autoFocus || focus}
