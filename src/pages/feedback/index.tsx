@@ -128,9 +128,9 @@ const FeedbackPage = () => {
     )
   }
 
-  const scores = data.scores
+  const scores = (data.scores && typeof data.scores === 'object') ? data.scores : null
   const avg = scores
-    ? Math.round((DIMENSIONS.reduce((sum, d) => sum + (scores[d.key] ?? 0), 0) / DIMENSIONS.length) * 10) / 10
+    ? Math.round((DIMENSIONS.reduce((sum, d) => sum + Number(scores[d.key] ?? 0), 0) / DIMENSIONS.length) * 10) / 10
     : null
 
   return (
