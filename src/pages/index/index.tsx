@@ -95,15 +95,19 @@ const IndexPage = () => {
                 <View className="flex-1 pr-2">
                   <View className="flex flex-row items-center gap-2">
                     <Text className="text-lg text-foreground">{c.title}</Text>
-                    {c.difficulty === '入门' ? (
-                      <View className="bg-primary bg-opacity-10 rounded-full px-2 py-1">
-                        <Text className="text-sm text-primary">{c.difficulty}</Text>
-                      </View>
-                    ) : (
-                      <View className="bg-accent rounded-full px-2 py-1">
-                        <Text className="text-sm text-foreground">{c.difficulty}</Text>
-                      </View>
-                    )}
+                    <View
+                      className={`rounded-full px-2 py-1 ${
+                        c.difficulty === '入门' ? 'bg-primary' : 'bg-accent'
+                      }`}
+                    >
+                      <Text
+                        className={`text-sm ${
+                          c.difficulty === '入门' ? 'text-white' : 'text-foreground'
+                        }`}
+                      >
+                        {c.difficulty}
+                      </Text>
+                    </View>
                   </View>
                   <Text className="block text-lg text-muted-foreground mt-1">{c.theme} · {c.sessions.length} 次会谈</Text>
                 </View>

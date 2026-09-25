@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { ChevronRight, UserRound } from 'lucide-react-taro'
+import { ChevronRight, UserRound, FileText, Briefcase } from 'lucide-react-taro'
 import { cases } from '@/data/cases'
 
 const CaseDetailPage = () => {
@@ -31,6 +31,40 @@ const CaseDetailPage = () => {
       </View>
 
       <View className="px-4 -mt-4 pb-8">
+        {/* 来访者档案卡 */}
+        <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mb-4">
+          <View className="flex flex-row items-center gap-2 mb-1">
+            <FileText size={16} color="#5B8C7B" />
+            <Text className="text-lg font-semibold text-foreground">来访者档案 · {c.client.name}</Text>
+          </View>
+          <View className="flex flex-row flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+            <Briefcase size={15} color="#6E756E" />
+            <Text className="text-base text-muted-foreground">
+              {c.client.gender} · {c.client.age} 岁 · {c.client.occupation}
+            </Text>
+            <View className="bg-accent rounded-full px-2 py-1">
+              <Text className="text-sm text-foreground">{c.difficulty}</Text>
+            </View>
+          </View>
+          <View className="mt-3">
+            <Text className="block text-base font-medium text-primary">主诉</Text>
+            <Text className="block text-lg text-foreground leading-relaxed mt-1">{c.client.chiefComplaint}</Text>
+          </View>
+          <View className="mt-3">
+            <Text className="block text-base font-medium text-primary">背景</Text>
+            <Text className="block text-lg text-foreground leading-relaxed mt-1">{c.client.background}</Text>
+          </View>
+          {c.client.tags.length > 0 && (
+            <View className="flex flex-row flex-wrap gap-2 mt-3">
+              {c.client.tags.map(t => (
+                <View key={t} className="bg-secondary rounded-full px-2 py-1">
+                  <Text className="text-sm text-muted-foreground">{t}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
         {c.sessions.map(s => (
           <View
             key={s.index}
