@@ -1,33 +1,103 @@
-import { View, Text, Image } from '@tarojs/components';
-import { useLoad } from '@tarojs/taro';
-import { Network } from '@/network';
-import './index.css';
+import { View, Text } from '@tarojs/components'
+import Taro from '@tarojs/taro'
+import { Layers, UserRound, ChevronRight, Leaf, Sparkles } from 'lucide-react-taro'
+import { fragmentGroups } from '@/data/fragments'
+import { cases } from '@/data/cases'
 
-/**
- * 默认首页，直接覆盖本页内容
- */
 const IndexPage = () => {
-  useLoad(async () => {
-    const res = await Network.request({ url: '/api/hello' });
-    console.log(res.data);
-  });
-
   return (
-    <View className="w-full h-full flex flex-col justify-center items-center gap-1">
-      <Image
-        className="w-32 h-28"
-        src="https://lf-coze-web-cdn.coze.cn/obj/eden-cn/lm-lgvj/ljhwZthlaukjlkulzlp/coze-coding/icon/coze-coding.gif"
-      />
-      <View className="self-stretch flex flex-col justify-start items-start gap-2">
-        <Text className="self-stretch text-center justify-start text-base-accent-foreground text-base font-bold">
-          应用开发中
-        </Text>
-        <Text className="self-stretch text-center justify-start text-base-muted-foreground text-sm font-normal">
-          请稍候，界面即将呈现
+    <View className="min-h-full bg-background">
+      {/* 顶部品牌区 */}
+      <View className="bg-primary px-5 pt-12 pb-10 rounded-b-3xl">
+        <View className="flex flex-row items-center gap-2">
+          <Leaf size={20} color="#ffffff" />
+          <Text className="text-white text-lg font-bold">CBT 练心场</Text>
+        </View>
+        <Text className="block text-white text-opacity-90 text-sm mt-3 leading-relaxed">
+          在安全的模拟咨询室里，{'\n'}把 CBT 的每一项技术练成你的本能。
         </Text>
       </View>
-    </View>
-  );
-};
 
-export default IndexPage;
+      <View className="px-4 -mt-5">
+        {/* 模块一 */}
+        <View className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+          <View className="flex flex-row items-center gap-3">
+            <View className="w-9 h-9 rounded-xl bg-primary bg-opacity-10 flex items-center justify-center">
+              <Layers size={18} color="#5B8C7B" />
+            </View>
+            <View className="flex-1">
+              <Text className="block text-base font-semibold text-foreground">片段练习</Text>
+              <Text className="block text-xs text-muted-foreground mt-1">单项技术刻意练习</Text>
+            </View>
+          </View>
+          <View className="mt-3 flex flex-col">
+            {fragmentGroups.map(g => (
+              <View
+                key={g.id}
+                className="flex flex-row items-center py-3 border-t border-border"
+                onClick={() => Taro.navigateTo({ url: `/pages/fragments/index?id=${g.id}` })}
+              >
+                <View className="flex-1">
+                  <Text className="block text-sm text-foreground">{g.name}</Text>
+                  <Text className="block text-xs text-muted-foreground mt-1">{g.desc}</Text>
+                </View>
+                <ChevronRight size={16} color="#9AA19A" />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* 模块二 */}
+        <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-4">
+          <View className="flex flex-row items-center gap-3">
+            <View className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
+              <UserRound size={18} color="#2F3430" />
+            </View>
+            <View className="flex-1">
+              <Text className="block text-base font-semibold text-foreground">完整咨询</Text>
+              <Text className="block text-xs text-muted-foreground mt-1">陪一位来访者走完全程</Text>
+            </View>
+          </View>
+          <View className="mt-3 flex flex-col">
+            {cases.map(c => (
+              <View
+                key={c.id}
+                className="flex flex-row items-center py-3 border-t border-border"
+                onClick={() => Taro.navigateTo({ url: `/pages/case-detail/index?id=${c.id}` })}
+              >
+                <View className="flex-1 pr-2">
+                  <View className="flex flex-row items-center gap-2">
+                    <Text className="text-sm text-foreground">{c.title}</Text>
+                    {c.difficulty === '入门' ? (
+                      <View className="bg-primary bg-opacity-10 rounded-full px-2 py-1">
+                        <Text className="text-[10px] text-primary">{c.difficulty}</Text>
+                      </View>
+                    ) : (
+                      <View className="bg-accent rounded-full px-2 py-1">
+                        <Text className="text-[10px] text-foreground">{c.difficulty}</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text className="block text-xs text-muted-foreground mt-1">{c.theme} · {c.sessions.length} 次会谈</Text>
+                </View>
+                <ChevronRight size={16} color="#9AA19A" />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* 理念卡 */}
+        <View className="mt-4 bg-secondary bg-opacity-70 rounded-2xl p-4 flex flex-row items-start gap-3">
+          <Sparkles size={16} color="#5B8C7B" />
+          <Text className="block flex-1 text-xs leading-relaxed text-muted-foreground">
+            每个练习都有 AI 扮演的来访者与你对话，结束后由“督导”依据 CBT 专业标准给出反馈。建议按基本技术 → 概念化 → 自动思维 → 信念工作的顺序练习。
+          </Text>
+        </View>
+
+        <View className="h-8" />
+      </View>
+    </View>
+  )
+}
+
+export default IndexPage
