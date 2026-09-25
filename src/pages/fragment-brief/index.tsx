@@ -1,9 +1,9 @@
 import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { BookOpen, MessageCircle, Lightbulb, ListChecks } from 'lucide-react-taro'
+import { BookOpen, MessageCircle, Lightbulb, ListChecks, History } from 'lucide-react-taro'
 import { allExercises } from '@/data/fragments'
 import { Button } from '@/components/ui/button'
-import { useSessionStore } from '@/store/session'
+import { useSessionStore, readPersisted, buildStorageKey } from '@/store/session'
 
 const FragmentBriefPage = () => {
   const router = useRouter()
@@ -19,8 +19,12 @@ const FragmentBriefPage = () => {
   }
 
   const isConcept = ex.taskType === 'conceptualization'
+  const key = buildStorageKey(null, 1, ex.id)
+  const saved = readPersisted(key)
+  const hasSaved = !!(saved && saved.messages.length)
+  const turnCount = saved?.messages.length ?? 0
 
-  const handleStart = () => {
+  const handleStart = (fresh: boolean) => {
     startSession({
       profile: ex.client,
       fragmentId: ex.id,
@@ -31,7 +35,8 @@ const FragmentBriefPage = () => {
       endUrl: isConcept
         ? `/pages/conceptualization/index?id=${ex.id}`
         : `/pages/feedback/index?id=${ex.id}`,
-      endLabel: isConcept ? '结束对话，去完成概念化' : '结束练习，请督导反馈'
+      endLabel: isConcept ? '结束对话，去完成概念化' : '结束练习，请督导反馈',
+      fresh
     })
     Taro.navigateTo({ url: '/pages/chat/index' })
   }
@@ -98,10 +103,28 @@ const FragmentBriefPage = () => {
         )}
       </View>
 
-      <View className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-3">
-        <Button className="w-full rounded-full" onClick={handleStart}>
-          <Text className="text-lg text-primary-foreground">进入咨询室</Text>
+      <View
+        className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-3"
+        style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+      >
+        {hasSaved && (
+          <View className="flex flex-row items-center gap-2 bg-secondary rounded-xl px-3 py-2">
+            <History size={15} color="#5B8C7B" />
+            <Text className="block flex-1 text-base text-foreground">
+              已有 {turnCount} 条对话记录，可继续练习
+            </Text>
+          </View>
+        )}
+        <Button className="w-full rounded-full" onClick={() => handleStart(false)}>
+          <Text className="text-lg text-primary-foreground">
+            {hasSaved ? '继续练习' : '进入咨询室'}
+          </Text>
         </Button>
+        {hasSaved && (
+          <Button variant="outline" className="w-full rounded-full" onClick={() => handleStart(true)}>
+            <Text className="text-lg text-primary">重新开始</Text>
+          </Button>
+        )}
       </View>
     </View>
   )

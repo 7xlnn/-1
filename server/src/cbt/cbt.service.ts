@@ -101,8 +101,42 @@ ${stateLines.length ? stateLines.join('\n') : ''}
     return map[taskType] ?? '请依据 CBT 专业标准评估咨询师本次的整体表现。';
   }
 
+  /** 评分维度定义（固定 6 项，0-10 分） */
+  static readonly SCORE_DIMENSIONS: { key: string; label: string }[] = [
+    { key: 'empathy', label: '共情与关系' },
+    { key: 'socratic', label: '苏格拉底式提问' },
+    { key: 'collaboration', label: '合作与引导' },
+    { key: 'agenda', label: '结构化与议程' },
+    { key: 'technique', label: '技术运用准确' },
+    { key: 'homework', label: '作业与巩固' }
+  ];
+
+  /** 从模型输出中解析评分 JSON 块与正文反馈 */
+  private parseScoredOutput(raw: string): { scores: Record<string, number> | null; feedback: string } {
+    const match = raw.match(/<SCORES>([\s\S]*?)<\/SCORES>/);
+    let scores: Record<string, number> | null = null;
+    if (match) {
+      try {
+        const parsed = JSON.parse(match[1].trim()) as Record<string, unknown>;
+        const clean: Record<string, number> = {};
+        for (const d of CbtService.SCORE_DIMENSIONS) {
+          const v = Number(parsed[d.key]);
+          if (Number.isFinite(v)) clean[d.key] = Math.max(0, Math.min(10, Math.round(v)));
+        }
+        if (Object.keys(clean).length === CbtService.SCORE_DIMENSIONS.length) scores = clean;
+      } catch {
+        scores = null;
+      }
+    }
+    const feedback = raw.replace(/<SCORES>[\s\S]*?<\/SCORES>/, '').trim();
+    return { scores, feedback };
+  }
+
   /** 督导反馈 */
-  async feedback(payload: FeedbackPayload, headers: Record<string, string>): Promise<{ feedback: string }> {
+  async feedback(
+    payload: FeedbackPayload,
+    headers: Record<string, string>
+  ): Promise<{ feedback: string; scores: Record<string, number> | null }> {
     const client = this.buildClient(HeaderUtils.extractForwardHeaders(headers));
     const c = payload.profile;
     const transcript = payload.messages
@@ -135,7 +169,15 @@ ${payload.userWork ? `咨询师在结束后提交的作答如下：\n${payload.u
 
 请你完成督导反馈。${this.taskRubric(payload.taskType)}
 
-请严格按以下结构输出，使用 Markdown，不要使用表格：
+首先，依据以下 6 个维度为学生本次表现打分（每项 0-10 的整数，可含半分向上取整，严格依据对话证据，避免普遍给高分）：
+${CbtService.SCORE_DIMENSIONS.map((d, i) => `${i + 1}. ${d.key}（${d.label}）`).join('\n')}
+
+把评分放在输出最开头，严格使用如下标签包裹一段 JSON，不要添加任何额外说明：
+<SCORES>
+{"empathy":0,"socratic":0,"collaboration":0,"agenda":0,"technique":0,"homework":0}
+</SCORES>
+
+随后再严格按以下结构输出文字反馈，使用 Markdown，不要使用表格：
 ## 做得好的地方
 （2-3条具体表现，引用对话中的原话或做法）
 ## 需要改进的地方
@@ -152,6 +194,6 @@ ${payload.userWork ? `咨询师在结束后提交的作答如下：\n${payload.u
       ],
       { model: 'doubao-seed-2-0-pro-260215', temperature: 0.6 }
     );
-    return { feedback: res.content };
+    return this.parseScoredOutput(res.content);
   }
 }

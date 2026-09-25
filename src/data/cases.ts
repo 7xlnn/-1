@@ -1,6 +1,7 @@
 import type { CounselingCase } from './types'
+import { extraCases } from './cases-extra'
 
-export const cases: CounselingCase[] = [
+const baseCases: CounselingCase[] = [
   // ==================== 个案一：抑郁症（入门） ====================
   {
     id: 'case-depression-lin',
@@ -310,5 +311,7 @@ export const cases: CounselingCase[] = [
     ]
   }
 ]
+
+export const cases: CounselingCase[] = [...baseCases, ...extraCases]
 
 export const getCase = (id: string) => cases.find(c => c.id === id)

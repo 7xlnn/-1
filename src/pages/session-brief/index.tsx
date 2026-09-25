@@ -1,9 +1,9 @@
 import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { BookOpen, MessageCircle, ListChecks, ClipboardList } from 'lucide-react-taro'
+import { BookOpen, MessageCircle, ListChecks, ClipboardList, History } from 'lucide-react-taro'
 import { cases } from '@/data/cases'
 import { Button } from '@/components/ui/button'
-import { useSessionStore } from '@/store/session'
+import { useSessionStore, readPersisted, buildStorageKey } from '@/store/session'
 
 const SessionBriefPage = () => {
   const router = useRouter()
@@ -20,7 +20,12 @@ const SessionBriefPage = () => {
     )
   }
 
-  const handleStart = () => {
+  const key = buildStorageKey(c.id, index, null)
+  const saved = readPersisted(key)
+  const hasSaved = !!(saved && saved.messages.length)
+  const turnCount = saved?.messages.length ?? 0
+
+  const handleStart = (fresh: boolean) => {
     startSession({
       profile: c.client,
       caseId: c.id,
@@ -30,7 +35,8 @@ const SessionBriefPage = () => {
       sessionGoal: session.goal,
       sessionTitle: `第 ${index} 次 · ${session.title}`,
       endUrl: `/pages/feedback/index?caseId=${c.id}&index=${index}`,
-      endLabel: '结束会谈，请督导反馈'
+      endLabel: '结束会谈，请督导反馈',
+      fresh
     })
     Taro.navigateTo({ url: '/pages/chat/index' })
   }
@@ -100,10 +106,28 @@ const SessionBriefPage = () => {
         </View>
       </View>
 
-      <View className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-3">
-        <Button className="w-full rounded-full" onClick={handleStart}>
-          <Text className="text-lg text-primary-foreground">开始本次会谈</Text>
+      <View
+        className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-3"
+        style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+      >
+        {hasSaved && (
+          <View className="flex flex-row items-center gap-2 bg-secondary rounded-xl px-3 py-2">
+            <History size={15} color="#5B8C7B" />
+            <Text className="block flex-1 text-base text-foreground">
+              已有 {turnCount} 条对话记录，可继续本次会谈
+            </Text>
+          </View>
+        )}
+        <Button className="w-full rounded-full" onClick={() => handleStart(false)}>
+          <Text className="text-lg text-primary-foreground">
+            {hasSaved ? '继续本次会谈' : '开始本次会谈'}
+          </Text>
         </Button>
+        {hasSaved && (
+          <Button variant="outline" className="w-full rounded-full" onClick={() => handleStart(true)}>
+            <Text className="text-lg text-primary">重新开始</Text>
+          </Button>
+        )}
       </View>
     </View>
   )

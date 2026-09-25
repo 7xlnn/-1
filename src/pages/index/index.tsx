@@ -1,10 +1,16 @@
+import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Layers, UserRound, ChevronRight, Leaf, Sparkles } from 'lucide-react-taro'
 import { fragmentGroups } from '@/data/fragments'
 import { cases } from '@/data/cases'
 
+type Filter = '全部' | '入门' | '进阶'
+const FILTERS: Filter[] = ['全部', '入门', '进阶']
+
 const IndexPage = () => {
+  const [filter, setFilter] = useState<Filter>('全部')
+  const shownCases = filter === '全部' ? cases : cases.filter(c => c.difficulty === filter)
   return (
     <View className="min-h-full bg-background">
       {/* 顶部品牌区 */}
@@ -58,8 +64,29 @@ const IndexPage = () => {
               <Text className="block text-lg text-muted-foreground mt-1">陪一位来访者走完全程</Text>
             </View>
           </View>
-          <View className="mt-3 flex flex-col">
-            {cases.map(c => (
+          {/* 难度筛选 */}
+          <View className="mt-3 flex flex-row gap-2">
+            {FILTERS.map(f => {
+              const active = f === filter
+              return (
+                <View
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`rounded-full px-3 py-1 border ${
+                    active
+                      ? 'bg-primary border-primary'
+                      : 'bg-background border-border'
+                  }`}
+                >
+                  <Text className={`text-base ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
+                    {f}
+                  </Text>
+                </View>
+              )
+            })}
+          </View>
+          <View className="mt-1 flex flex-col">
+            {shownCases.map(c => (
               <View
                 key={c.id}
                 className="flex flex-row items-center py-3 border-t border-border"
@@ -83,6 +110,9 @@ const IndexPage = () => {
                 <ChevronRight size={16} color="#9AA19A" />
               </View>
             ))}
+            {shownCases.length === 0 && (
+              <Text className="block py-4 text-base text-muted-foreground text-center">该难度下暂无个案</Text>
+            )}
           </View>
         </View>
 

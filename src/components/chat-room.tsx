@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { View, Text, Input, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
 import { Button } from '@/components/ui/button'
 import { useSessionStore } from '@/store/session'
-import { Send, Flag } from 'lucide-react-taro'
+import type { ChatMsg } from '@/store/session'
+import { Send, Flag, Target, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react-taro'
 
 interface ChatRoomProps {
   /** 结束练习/会谈后跳转的页面 */
@@ -13,9 +14,13 @@ interface ChatRoomProps {
 }
 
 const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
-  const { profile, messages, addMessage, agentFocus, clientState, sessionGoal } = useSessionStore()
+  const { profile, messages, addMessage, setMessages, agentFocus, clientState, sessionGoal } = useSessionStore()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [failed, setFailed] = useState(false)
+  const [goalOpen, setGoalOpen] = useState(false)
+  /** 中断标志：stop 置 true，请求返回后据此丢弃回复 */
+  const abortRef = useRef(false)
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -26,42 +31,103 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
     }, 50)
   }
 
+  /** 调用来访者接口；context 为发送时的完整消息（含最后一条用户消息） */
+  const requestReply = async (context: ChatMsg[]) => {
+    console.log('[CBT chat request] /api/cbt/chat', context.length, 'turns')
+    const res = await Network.request({
+      url: '/api/cbt/chat',
+      method: 'POST',
+      data: { profile, messages: context, agentFocus, clientState, sessionGoal }
+    })
+    console.log('[CBT chat response]', res.data)
+    if (abortRef.current) return
+    const reply = (res.data as { reply?: string })?.reply || '（来访者沉默了片刻）'
+    addMessage({ role: 'assistant', content: reply })
+    scrollToBottom()
+  }
+
+  /** 发送新的一条咨询师消息 */
   const send = async () => {
     const text = input.trim()
     if (!text || loading || !profile) return
     setInput('')
+    setFailed(false)
     addMessage({ role: 'user', content: text })
-    setLoading(true)
     scrollToBottom()
+    await runWith([...messages, { role: 'user' as const, content: text }])
+  }
+
+  /** 重新生成：丢弃最后一条来访者回复（若有），重发最后一条用户消息 */
+  const regenerate = async () => {
+    if (loading || !profile) return
+    let base = [...messages]
+    if (base.length && base[base.length - 1].role === 'assistant') base = base.slice(0, -1)
+    if (!base.length || base[base.length - 1].role !== 'user') return
+    setMessages(base)
+    setFailed(false)
+    scrollToBottom()
+    await runWith(base)
+  }
+
+  /** 统一的请求执行器，处理 loading / 停止 / 失败 */
+  const runWith = async (context: ChatMsg[]) => {
+    abortRef.current = false
+    setLoading(true)
     try {
-      const history = [...messages, { role: 'user' as const, content: text }]
-      console.log('[CBT chat request] /api/cbt/chat', history.length, 'turns')
-      const res = await Network.request({
-        url: '/api/cbt/chat',
-        method: 'POST',
-        data: {
-          profile,
-          messages: history,
-          agentFocus,
-          clientState,
-          sessionGoal
-        }
-      })
-      console.log('[CBT chat response]', res.data)
-      const reply = (res.data as { reply?: string })?.reply || '（来访者沉默了片刻）'
-      addMessage({ role: 'assistant', content: reply })
-      scrollToBottom()
+      await requestReply(context)
     } catch (e) {
       console.error('[CBT chat error]', e)
-      Taro.showToast({ title: '网络异常，请重试', icon: 'none' })
+      if (!abortRef.current) {
+        setFailed(true)
+        Taro.showToast({ title: '网络异常，可点击重新生成', icon: 'none' })
+      }
     } finally {
-      setLoading(false)
+      if (!abortRef.current) setLoading(false)
+      else setLoading(false)
     }
   }
 
+  /** 停止生成：立即解锁输入；途中的回复返回后丢弃 */
+  const stop = () => {
+    abortRef.current = true
+    setLoading(false)
+    setFailed(false)
+    Taro.showToast({ title: '已停止，可继续对话', icon: 'none' })
+  }
+
+  /** 是否可重新生成（至少存在一条用户消息且当前不在加载） */
+  const canRegenerate =
+    !loading &&
+    messages.length > 0 &&
+    (() => {
+      const last = messages[messages.length - 1]
+      return last.role === 'user' || last.role === 'assistant'
+    })()
+
   return (
     <View className="flex flex-col h-full bg-background">
-      <ScrollView scrollY className="flex-1 px-4 py-4" scrollWithAnimation>
+      {/* 本阶段目标胶囊 */}
+      {sessionGoal ? (
+        <View className="px-4 pt-3">
+          <View className="bg-secondary rounded-2xl border border-border">
+            <View
+              className="flex flex-row items-center gap-2 px-4 py-3"
+              onClick={() => setGoalOpen(v => !v)}
+            >
+              <Target size={17} color="#5B8C7B" />
+              <Text className="block flex-1 text-base font-medium text-foreground">本阶段目标</Text>
+              {goalOpen ? <ChevronUp size={16} color="#9AA19A" /> : <ChevronDown size={16} color="#9AA19A" />}
+            </View>
+            {goalOpen && (
+              <View className="px-4 pb-3 -mt-1">
+                <Text className="block text-base leading-relaxed text-muted-foreground">{sessionGoal}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      ) : null}
+
+      <ScrollView id="msg-list" scrollY className="flex-1 px-4 py-4" scrollWithAnimation>
         <View className="flex flex-col gap-4 pb-4">
           {messages.length === 0 && (
             <View className="py-10 text-center">
@@ -73,7 +139,7 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
           {messages.map((m, i) =>
             m.role === 'assistant' ? (
               <View key={i} className="flex flex-row items-start gap-2">
-                <View className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                <View className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
                   <Text className="text-lg text-muted-foreground">{profile?.name.slice(0, 1)}</Text>
                 </View>
                 <View className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 max-w-[78%]">
@@ -90,14 +156,37 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
           )}
           {loading && (
             <View className="flex flex-row items-center gap-2">
-              <View className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+              <View className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
                 <Text className="text-lg text-muted-foreground">{profile?.name.slice(0, 1)}</Text>
               </View>
               <View className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
-                <Text className="text-lg text-muted-foreground">来访者正在输入…</Text>
+                <Text className="text-base text-muted-foreground">来访者正在输入…</Text>
               </View>
             </View>
           )}
+
+          {/* 操作条：停止生成 / 失败重新生成 */}
+          {loading ? (
+            <View className="flex justify-center">
+              <Button variant="outline" size="sm" onClick={stop}>
+                <Text className="text-base">停止生成</Text>
+              </Button>
+            </View>
+          ) : failed ? (
+            <View className="flex justify-center">
+              <Button variant="outline" size="sm" onClick={regenerate}>
+                <RefreshCw size={15} color="#5B8C7B" />
+                <Text className="text-base text-primary ml-1">重新生成</Text>
+              </Button>
+            </View>
+          ) : canRegenerate ? (
+            <View className="flex justify-center">
+              <Button variant="ghost" size="sm" onClick={regenerate}>
+                <RefreshCw size={14} color="#6E756E" />
+                <Text className="text-base text-muted-foreground ml-1">重新生成来访者回复</Text>
+              </Button>
+            </View>
+          ) : null}
         </View>
       </ScrollView>
 
@@ -120,7 +209,7 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
         <View className="mt-2 flex justify-center">
           <Button variant="ghost" size="sm" onClick={() => Taro.navigateTo({ url: endUrl })}>
             <Flag size={15} color="#6E756E" />
-            <Text className="text-lg text-muted-foreground ml-1">{endLabel}</Text>
+            <Text className="text-base text-muted-foreground ml-1">{endLabel}</Text>
           </Button>
         </View>
       </View>

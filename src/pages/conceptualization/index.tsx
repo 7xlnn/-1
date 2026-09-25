@@ -55,9 +55,10 @@ const ConceptualizationPage = () => {
         data: {
           profile: ex.client,
           messages,
-          exerciseTitle: ex.title,
-          exerciseGoal: ex.goals.join('；'),
-          userContent: content
+          taskType: 'conceptualization',
+          userWork: content,
+          sessionGoal: ex.goals.join('；'),
+          sessionTitle: ''
         }
       })
       console.log('[CBT feedback response]', res.data)
