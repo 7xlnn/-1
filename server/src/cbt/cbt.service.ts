@@ -29,6 +29,35 @@ export interface FeedbackPayload {
   sessionTitle?: string;
 }
 
+/** AI 生成来访者一周情绪记录表的入参 */
+export interface MoodRecordPayload {
+  profile: ClientProfile;
+  /** 会谈序号（从 1 开始） */
+  sessionIndex: number;
+  /** 总会谈数 */
+  totalSessions: number;
+  /** 本次会谈标题 */
+  sessionTitle?: string;
+  /** 本次会谈目标 */
+  sessionGoal?: string;
+}
+
+/** 与前端 ThoughtRecordEntry 对应的单条记录 */
+export interface ThoughtRecordEntryDto {
+  date: string;
+  situation: string;
+  automaticThought: string;
+  thoughtBelief: number;
+  emotion: string;
+  emotionIntensity: number;
+  distortions: string[];
+  adaptiveResponse: string;
+  responseBelief: number | null;
+  resultBelief: number | null;
+  resultEmotion: string;
+  resultAction: string;
+}
+
 @Injectable()
 export class CbtService {
   private buildClient(forwardHeaders: Record<string, string>): LLMClient {
@@ -195,5 +224,123 @@ ${CbtService.SCORE_DIMENSIONS.map((d, i) => `${i + 1}. ${d.key}（${d.label}）`
       { model: 'doubao-seed-2-0-pro-260215', temperature: 0.6 }
     );
     return this.parseScoredOutput(res.content);
+  }
+
+  /** 把数值收敛为 0-100 的整数 */
+  private clamp100(v: unknown): number {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.min(100, Math.round(n)));
+  }
+
+  /** 解析情绪记录表 JSON 输出 */
+  private parseMoodRecord(raw: string): ThoughtRecordEntryDto[] {
+    const match = raw.match(/<RECORDS>([\s\S]*?)<\/RECORDS>/);
+    if (!match) return [];
+    try {
+      const parsed = JSON.parse(match[1].trim()) as unknown;
+      if (!Array.isArray(parsed)) return [];
+      return parsed.slice(0, 7).map((item: Record<string, unknown>) => ({
+        date: String(item.date ?? '').slice(0, 20),
+        situation: String(item.situation ?? ''),
+        automaticThought: String(item.automaticThought ?? ''),
+        thoughtBelief: this.clamp100(item.thoughtBelief),
+        emotion: String(item.emotion ?? ''),
+        emotionIntensity: this.clamp100(item.emotionIntensity),
+        distortions: Array.isArray(item.distortions)
+          ? item.distortions.map(d => String(d)).slice(0, 6)
+          : [],
+        adaptiveResponse: String(item.adaptiveResponse ?? ''),
+        responseBelief:
+          item.responseBelief === null || item.responseBelief === undefined || item.responseBelief === ''
+            ? null
+            : this.clamp100(item.responseBelief),
+        resultBelief:
+          item.resultBelief === null || item.resultBelief === undefined || item.resultBelief === ''
+            ? null
+            : this.clamp100(item.resultBelief),
+        resultEmotion: String(item.resultEmotion ?? ''),
+        resultAction: String(item.resultAction ?? '')
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /** 依据个案背景，由 AI 扮演来访者填写一份一周情绪记录表 */
+  async generateMoodRecord(
+    payload: MoodRecordPayload,
+    headers: Record<string, string>
+  ): Promise<{ weekLabel: string; entries: ThoughtRecordEntryDto[] }> {
+    const llm = this.buildClient(HeaderUtils.extractForwardHeaders(headers));
+    const c = payload.profile;
+    const progress = payload.sessionIndex / Math.max(1, payload.totalSessions);
+
+    // 治疗越早期，来访者越不会做"适合的反应"；中后期逐渐能完成后半部分
+    const responseStage =
+      progress < 0.34
+        ? '这是治疗很早期，来访者还没学会检验想法，绝大多数条目只填写到「自动思维、情绪」，「适合的反应」与「结果」相关字段留空（adaptiveResponse 为空字符串，responseBelief、resultBelief 为 null，resultEmotion/resultAction 也可留空）。'
+        : progress < 0.67
+          ? '治疗进入中期，来访者开始尝试在一两条记录里用新学到的方法做「适合的反应」，但相信程度不高、并不稳定；其余条目仍只填到情绪。'
+          : '治疗到了后期，来访者能在多数条目里较完整地完成「适合的反应」与「结果」，反应较平衡、情绪强度较前下降，但仍可能有个别反复。';
+
+    const system = `你正在角色扮演，名字叫${c.name}，${c.gender}，${c.age}岁，职业是${c.occupation}。你正依据自己这一周的真实生活，填写一份认知行为疗法的情绪记录表（思维记录表）。
+
+【主诉】${c.chiefComplaint}
+【背景】
+${c.background}
+【你常有的自动思维】
+${c.automaticThoughts.map(t => `· ${t}`).join('\n')}
+【你常有的情绪】${c.emotions.join('、')}
+【你的行为与应对】${c.behaviors.join('、')}
+【说话/表达风格】${c.speechStyle}
+
+【填写规则，必须严格遵守】
+1. 完全以${c.name}第一人称、普通人的口吻填写，使用口语化、具体的生活细节，不要使用"自动思维""认知歪曲"等专业术语（认知歪曲标签除外，那是给咨询师看的）。
+2. 每条记录的情境、自动思维、情绪必须真实合理，且彼此符合 CBT 的"情境—自动思维—情绪—行为"逻辑；情绪与相信程度用 0-100 的数字。
+3. 情境要写出具体事件与令人痛苦的生理感觉；自动思维写出脑中闪过的念头或画面。
+4. 记录之间要有变化，不要雷同；情绪强度、相信程度要符合该障碍的真实波动。
+5. 生成 5 到 7 条，覆盖最近一周（可包含工作日与周末、白天与夜晚）。
+6. ${responseStage}
+7. 「认知歪曲」distortions 只在来访者已做适合反应、或明显可标注时填写，使用简短中文标签（如 灾难化、非黑即白、以偏概全、读心术、应该陈述、情绪推理），早期可留空数组。
+8. 只输出规定的 JSON，不要输出任何解释或多余文字。`;
+
+    const userPrompt = `这是你第 ${payload.sessionIndex}/${payload.totalSessions} 次咨询${
+      payload.sessionTitle ? `（${payload.sessionTitle}）` : ''
+    }前的一周。本次会谈咨询师的目标是：${payload.sessionGoal ?? '（未指定）'}。
+
+请回顾这一周，把情绪记录表填好。严格使用如下标签包裹一段 JSON 数组：
+<RECORDS>
+[
+  {
+    "date": "周一 10/12",
+    "situation": "具体事件 + 生理感觉",
+    "automaticThought": "脑中闪过的念头/画面",
+    "thoughtBelief": 85,
+    "emotion": "焦虑",
+    "emotionIntensity": 80,
+    "distortions": ["灾难化"],
+    "adaptiveResponse": "平衡后的想法，没有则空字符串",
+    "responseBelief": null,
+    "resultBelief": null,
+    "resultEmotion": "如 焦虑 40%，没有则空字符串",
+    "resultAction": "做了什么，没有则空字符串"
+  }
+]
+</RECORDS>`;
+
+    const res = await llm.invoke(
+      [
+        { role: 'system', content: system },
+        { role: 'user', content: userPrompt }
+      ],
+      { model: 'doubao-seed-2-0-pro-260215', temperature: 0.85 }
+    );
+
+    const entries = this.parseMoodRecord(res.content);
+    return {
+      weekLabel: `第 ${payload.sessionIndex} 次会谈前一周`,
+      entries
+    };
   }
 }

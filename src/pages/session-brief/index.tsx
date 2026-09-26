@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { BookOpen, MessageCircle, ListChecks, ClipboardList, History } from 'lucide-react-taro'
+import { BookOpen, MessageCircle, ListChecks, ClipboardList, History, NotebookPen } from 'lucide-react-taro'
 import { cases } from '@/data/cases'
 import { Button } from '@/components/ui/button'
 import { useSessionStore, readPersisted, buildStorageKey } from '@/store/session'
@@ -101,6 +101,26 @@ const SessionBriefPage = () => {
             <Text className="text-lg text-muted-foreground w-16">来访者</Text>
             <Text className="block flex-1 text-lg text-foreground">
               {c.client.name}，{c.client.age} 岁，{c.client.occupation}
+            </Text>
+          </View>
+        </View>
+
+        {/* 来访者情绪记录表 */}
+        <View
+          className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3 flex flex-row items-center"
+          onClick={() =>
+            Taro.navigateTo({
+              url: `/pages/mood-record/index?caseId=${c.id}&index=${index}`
+            })
+          }
+        >
+          <View className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
+            <NotebookPen size={18} color="#5B8C7B" />
+          </View>
+          <View className="flex-1 px-3">
+            <Text className="block text-lg font-medium text-foreground">来访者情绪记录表</Text>
+            <Text className="block text-base text-muted-foreground mt-1 leading-relaxed">
+              查看 TA 在会谈前自己记录的一周情绪与思维
             </Text>
           </View>
         </View>

@@ -7,7 +7,9 @@ export default defineAppConfig({
     'pages/conceptualization/index',
     'pages/feedback/index',
     'pages/case-detail/index',
-    'pages/session-brief/index'
+    'pages/session-brief/index',
+    'pages/mood-record/index',
+    'pages/my-mood/index'
   ],
   window: {
     backgroundTextStyle: 'light',

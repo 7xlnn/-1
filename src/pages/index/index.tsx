@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { Layers, UserRound, ChevronRight, Leaf, Sparkles } from 'lucide-react-taro'
+import { Layers, UserRound, ChevronRight, Leaf, Sparkles, HeartPulse } from 'lucide-react-taro'
 import { fragmentGroups } from '@/data/fragments'
 import { cases } from '@/data/cases'
 
@@ -118,6 +118,21 @@ const IndexPage = () => {
               <Text className="block py-4 text-base text-muted-foreground text-center">该难度下暂无个案</Text>
             )}
           </View>
+        </View>
+
+        {/* 模块三：我的情绪周记 */}
+        <View
+          className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-4 flex flex-row items-center"
+          onClick={() => Taro.navigateTo({ url: '/pages/my-mood/index' })}
+        >
+          <View className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(192,101,79,0.12)' }}>
+            <HeartPulse size={18} color="#c0654f" />
+          </View>
+          <View className="flex-1 px-3">
+            <Text className="block text-lg font-semibold text-foreground">我的情绪周记</Text>
+            <Text className="block text-base text-muted-foreground mt-1">用 DTR 记录表记录自己的一周</Text>
+          </View>
+          <ChevronRight size={16} color="#9AA19A" />
         </View>
 
         {/* 理念卡 */}
