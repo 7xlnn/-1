@@ -194,10 +194,31 @@ const MyMoodPage = () => {
 
       {/* 编辑弹层 */}
       {editing && (
-        <View className="fixed inset-0 z-50" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
+        <View
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999,
+            backgroundColor: 'rgba(0,0,0,0.4)'
+          }}
+        >
           <View
-            className="fixed left-0 right-0 bottom-0 bg-background rounded-t-3xl"
-            style={{ display: 'flex', flexDirection: 'column', height: '88vh', overflow: 'hidden' }}
+            style={{
+              position: 'fixed',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '88vh',
+              overflow: 'hidden',
+              backgroundColor: '#fbfaf6',
+              borderTopLeftRadius: '24px',
+              borderTopRightRadius: '24px'
+            }}
           >
             <View
               className="flex flex-row items-center justify-between px-5 pt-4 pb-3"
