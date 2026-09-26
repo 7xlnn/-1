@@ -197,9 +197,12 @@ const MyMoodPage = () => {
         <View className="fixed inset-0 z-50" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
           <View
             className="fixed left-0 right-0 bottom-0 bg-background rounded-t-3xl"
-            style={{ display: 'flex', flexDirection: 'column', maxHeight: '88vh' }}
+            style={{ display: 'flex', flexDirection: 'column', height: '88vh', overflow: 'hidden' }}
           >
-            <View className="flex flex-row items-center justify-between px-5 pt-4 pb-3">
+            <View
+              className="flex flex-row items-center justify-between px-5 pt-4 pb-3"
+              style={{ flexShrink: 0 }}
+            >
               <Text className="text-lg font-bold text-foreground">
                 {editIndex === null ? '记录一次情绪' : '编辑记录'}
               </Text>
@@ -211,7 +214,7 @@ const MyMoodPage = () => {
               </View>
             </View>
 
-            <ScrollView scrollY className="flex-1" style={{ maxHeight: '60vh' }}>
+            <ScrollView scrollY className="flex-1" style={{ flex: 1, minHeight: 0 }}>
               <View className="px-5 pb-8 flex flex-col gap-4">
                 <View>
                   <Text className="block text-sm text-primary font-medium mb-1">日期 / 时间</Text>
@@ -315,13 +318,16 @@ const MyMoodPage = () => {
               </View>
             </ScrollView>
 
-            <View className="px-5 py-3 bg-card border-t border-border flex flex-row gap-3">
+            <View
+              className="px-5 py-3 bg-card border-t border-border flex flex-row gap-3"
+              style={{ flexShrink: 0 }}
+            >
               <Button variant="outline" className="flex-1 rounded-full" onClick={() => setEditing(false)}>
                 <Text className="text-base text-primary">取消</Text>
               </Button>
               <Button className="flex-1 rounded-full" onClick={saveDraft}>
                 <Check size={16} color="#ffffff" />
-                <Text className="ml-1 text-base text-primary-foreground">保存</Text>
+                <Text className="ml-1 text-base text-primary-foreground">保存记录</Text>
               </Button>
             </View>
           </View>
