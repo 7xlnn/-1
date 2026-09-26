@@ -1,16 +1,9 @@
-import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { Layers, UserRound, ChevronRight, Leaf, Sparkles, HeartPulse } from 'lucide-react-taro'
+import { Layers, ChevronRight, Leaf, Sparkles } from 'lucide-react-taro'
 import { fragmentGroups } from '@/data/fragments'
-import { cases } from '@/data/cases'
-
-type Filter = '全部' | '入门' | '进阶'
-const FILTERS: Filter[] = ['全部', '入门', '进阶']
 
 const IndexPage = () => {
-  const [filter, setFilter] = useState<Filter>('全部')
-  const shownCases = filter === '全部' ? cases : cases.filter(c => c.difficulty === filter)
   return (
     <View className="min-h-full bg-background">
       {/* 顶部品牌区 */}
@@ -25,7 +18,7 @@ const IndexPage = () => {
       </View>
 
       <View className="px-4 -mt-5">
-        {/* 模块一 */}
+        {/* 片段练习 */}
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm">
           <View className="flex flex-row items-center gap-3">
             <View className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
@@ -51,88 +44,6 @@ const IndexPage = () => {
               </View>
             ))}
           </View>
-        </View>
-
-        {/* 模块二 */}
-        <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-4">
-          <View className="flex flex-row items-center gap-3">
-            <View className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
-              <UserRound size={18} color="#2F3430" />
-            </View>
-            <View className="flex-1">
-              <Text className="block text-lg font-semibold text-foreground">完整咨询</Text>
-              <Text className="block text-lg text-muted-foreground mt-1">陪一位来访者走完全程</Text>
-            </View>
-          </View>
-          {/* 难度筛选 */}
-          <View className="mt-3 flex flex-row gap-2">
-            {FILTERS.map(f => {
-              const active = f === filter
-              return (
-                <View
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`rounded-full px-3 py-1 border ${
-                    active
-                      ? 'bg-primary border-primary'
-                      : 'bg-background border-border'
-                  }`}
-                >
-                  <Text className={`text-base ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
-                    {f}
-                  </Text>
-                </View>
-              )
-            })}
-          </View>
-          <View className="mt-1 flex flex-col">
-            {shownCases.map(c => (
-              <View
-                key={c.id}
-                className="flex flex-row items-center py-3 border-t border-border"
-                onClick={() => Taro.navigateTo({ url: `/pages/case-detail/index?id=${c.id}` })}
-              >
-                <View className="flex-1 pr-2">
-                  <View className="flex flex-row items-center gap-2">
-                    <Text className="text-lg text-foreground">{c.title}</Text>
-                    <View
-                      className={`rounded-full px-2 py-1 ${
-                        c.difficulty === '入门' ? 'bg-primary' : 'bg-accent'
-                      }`}
-                    >
-                      <Text
-                        className={`text-sm ${
-                          c.difficulty === '入门' ? 'text-white' : 'text-foreground'
-                        }`}
-                      >
-                        {c.difficulty}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text className="block text-lg text-muted-foreground mt-1">{c.theme} · {c.sessions.length} 次会谈</Text>
-                </View>
-                <ChevronRight size={16} color="#9AA19A" />
-              </View>
-            ))}
-            {shownCases.length === 0 && (
-              <Text className="block py-4 text-base text-muted-foreground text-center">该难度下暂无个案</Text>
-            )}
-          </View>
-        </View>
-
-        {/* 模块三：我的情绪周记 */}
-        <View
-          className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-4 flex flex-row items-center"
-          onClick={() => Taro.navigateTo({ url: '/pages/my-mood/index' })}
-        >
-          <View className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(192,101,79,0.12)' }}>
-            <HeartPulse size={18} color="#c0654f" />
-          </View>
-          <View className="flex-1 px-3">
-            <Text className="block text-lg font-semibold text-foreground">我的情绪周记</Text>
-            <Text className="block text-base text-muted-foreground mt-1">用 DTR 记录表记录自己的一周</Text>
-          </View>
-          <ChevronRight size={16} color="#9AA19A" />
         </View>
 
         {/* 理念卡 */}
