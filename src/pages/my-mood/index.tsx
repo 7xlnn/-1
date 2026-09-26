@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { HeartPulse, Plus, X, Check, Trash2, PencilLine } from 'lucide-react-taro'
@@ -62,6 +62,18 @@ const MyMoodPage = () => {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<ThoughtRecordEntry>(emptyDraft())
   const [editIndex, setEditIndex] = useState<number | null>(null)
+
+  // 弹层打开时隐藏原生 TabBar（否则小程序原生 TabBar 会盖住底部按钮）
+  useEffect(() => {
+    if (editing) {
+      Taro.hideTabBar({ animation: false })
+    } else {
+      Taro.showTabBar({ animation: false })
+    }
+    return () => {
+      Taro.showTabBar({ animation: false })
+    }
+  }, [editing])
 
   const persist = (next: ThoughtRecordEntry[]) => {
     setEntries(next)
@@ -340,7 +352,7 @@ const MyMoodPage = () => {
             </ScrollView>
 
             <View
-              className="px-5 py-3 bg-card border-t border-border flex flex-row gap-3"
+              className="px-5 pt-3 pb-6 bg-card border-t border-border flex flex-row gap-3"
               style={{ flexShrink: 0 }}
             >
               <Button variant="outline" className="flex-1 rounded-full" onClick={() => setEditing(false)}>
