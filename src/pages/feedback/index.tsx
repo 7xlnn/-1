@@ -3,10 +3,12 @@ import { View, Text, RichText } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { allExercises } from '@/data/fragments'
 import { cases } from '@/data/cases'
 import { useSessionStore } from '@/store/session'
-import { ChartNoAxesColumn, House } from 'lucide-react-taro'
+import { useProgressStore } from '@/store/progress'
+import { CircleCheck, ChartNoAxesColumn, ClipboardList, House, ListChecks } from 'lucide-react-taro'
 
 /** 六维评分定义（与后端一致） */
 const DIMENSIONS = [
@@ -21,6 +23,16 @@ const DIMENSIONS = [
 interface FeedbackResult {
   feedback: string
   scores: Record<string, number> | null
+  sessionCheck?: {
+    metGoals?: string[]
+    unmetGoals?: string[]
+    homework?: string
+  } | null
+}
+
+interface AskItem {
+  q: string
+  a: string
 }
 
 /** 极简 Markdown -> 可被 RichText 使用的 HTML（仅覆盖督导模板用到的语法） */
@@ -58,6 +70,9 @@ const FeedbackPage = () => {
   )
   const [loading, setLoading] = useState(!pendingFeedback)
   const [error, setError] = useState('')
+  const [asks, setAsks] = useState<AskItem[]>([])
+  const [askInput, setAskInput] = useState('')
+  const [asking, setAsking] = useState(false)
 
   const isFragment = !!fragmentId
   const ex = isFragment ? allExercises.find(e => e.id === fragmentId) : null
@@ -91,7 +106,25 @@ const FeedbackPage = () => {
         })
         console.log('[CBT feedback response]', res.data)
         const body = res.data as FeedbackResult
-        setData({ feedback: body.feedback ?? '', scores: body.scores ?? null })
+        setData({
+          feedback: body.feedback ?? '',
+          scores: body.scores ?? null,
+          sessionCheck: body.sessionCheck ?? null
+        })
+        // 写入学习进度（仅当存在有效评分）
+        const sc = body.scores && typeof body.scores === 'object' ? body.scores : null
+        if (sc) {
+          const vals = Object.values(sc).map(Number).filter(Number.isFinite)
+          const avg = vals.length ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : 0
+          useProgressStore.getState().addRecord({
+            kind: isFragment ? 'fragment' : 'session',
+            title,
+            category: ex?.categoryName ?? session?.title ?? title,
+            avg,
+            scores: sc
+          })
+          console.log('[CBT progress] 已记录练习：', title, '均分', avg)
+        }
       } catch (e) {
         console.error('[CBT feedback error]', e)
         setError('获取督导反馈失败，请重试')
@@ -107,6 +140,31 @@ const FeedbackPage = () => {
     // 反馈已查看，清除本次会话存档
     clearPersisted()
     Taro.reLaunch({ url: '/pages/index/index' })
+  }
+
+  const askSupervisor = async () => {
+    const q = askInput.trim()
+    if (!q || asking || !data?.feedback) return
+    setAsking(true)
+    try {
+      const res = await Network.request({
+        url: '/api/cbt/ask-supervisor',
+        method: 'POST',
+        data: {
+          title,
+          clientName: profile?.name ?? '来访者',
+          report: data.feedback,
+          question: q
+        }
+      })
+      setAsks(prev => [...prev, { q, a: (res.data as { reply?: string }).reply ?? '' }])
+      setAskInput('')
+    } catch (e) {
+      console.error('[CBT ask-supervisor error]', e)
+      Taro.showToast({ title: '追问失败，请重试', icon: 'none' })
+    } finally {
+      setAsking(false)
+    }
   }
 
   if (loading) {
@@ -180,6 +238,92 @@ const FeedbackPage = () => {
         {/* 文字反馈（Markdown） */}
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3">
           <RichText nodes={mdToHtml(data.feedback)} />
+        </View>
+
+        {/* 完整咨询：目标核对 + 下周作业 */}
+        {!isFragment && data.sessionCheck && (
+          <View className="bg-card rounded-2xl border border-border shadow-sm mt-3 overflow-hidden">
+            <View className="flex flex-row items-center gap-2 px-4 py-3" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
+              <ListChecks size={16} color="#5B8C7B" />
+              <Text className="text-lg font-semibold text-foreground">本次会谈目标核对</Text>
+            </View>
+            <View className="p-4 flex flex-col gap-3">
+              {data.sessionCheck.metGoals?.length ? (
+                <View className="flex flex-col gap-2">
+                  <Text className="text-base font-medium text-primary">✓ 已逐步达成</Text>
+                  {data.sessionCheck.metGoals.map((g, i) => (
+                    <Text key={i} className="block text-base leading-relaxed" style={{ color: '#3C423E' }}>
+                      <Text className="text-primary">{g}</Text>
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+              {data.sessionCheck.unmetGoals?.length ? (
+                <View className="flex flex-col gap-2 pt-1 border-t border-border">
+                  <Text className="text-base font-medium text-muted-foreground">↗ 待继续推进</Text>
+                  {data.sessionCheck.unmetGoals.map((g, i) => (
+                    <Text key={i} className="block text-base leading-relaxed" style={{ color: '#6B6F68' }}>
+                      • {g}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+              {data.sessionCheck.homework ? (
+                <View className="flex flex-row items-start gap-2 pt-3 border-t border-border">
+                  <ClipboardList size={18} color="#5B8C7B" className="mt-1" />
+                  <View className="flex-1">
+                    <Text className="block text-base font-semibold text-foreground mb-1">下周作业</Text>
+                    <Text className="block text-base leading-relaxed" style={{ color: '#3C423E' }}>
+                      {data.sessionCheck.homework}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        )}
+
+        {/* 追问督导对话区 */}
+        <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3">
+          <View className="flex flex-row items-center gap-2 mb-3">
+            <CircleCheck size={16} color="#5B8C7B" />
+            <Text className="text-lg font-semibold text-foreground">还有什么想请督导指点？</Text>
+          </View>
+          <Text className="block text-base mb-3 leading-relaxed" style={{ color: '#6B6F68' }}>
+            对刚才的练习或反馈有问题，可以直接向督导追问，例如：「我这个情境里该怎么先共情再提问？」
+          </Text>
+
+          {asks.length > 0 && (
+            <View className="flex flex-col gap-3 mb-3">
+              {asks.map((it, i) => (
+                <View key={i} className="flex flex-col gap-2">
+                  <View className="self-end max-w-full bg-primary rounded-2xl rounded-br-sm px-4 py-2">
+                    <Text className="block text-base leading-relaxed" style={{ color: '#ffffff' }}>{it.q}</Text>
+                  </View>
+                  <View className="self-start max-w-full bg-secondary rounded-2xl rounded-bl-sm px-4 py-2">
+                    <Text className="block text-base leading-relaxed" style={{ color: '#2F3430' }}>{it.a}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+            <View className="flex-1 bg-secondary rounded-2xl px-4 py-2">
+              <Input
+                className="w-full text-base bg-transparent"
+                placeholder="输入你的问题…"
+                value={askInput}
+                onInput={e => setAskInput(e.detail.value)}
+                disabled={asking}
+                confirmType="send"
+                onConfirm={askSupervisor}
+              />
+            </View>
+            <Button size="sm" className="rounded-full flex-shrink-0" onClick={askSupervisor} disabled={asking}>
+              <Text className="text-base">{asking ? '回答中' : '追问'}</Text>
+            </Button>
+          </View>
         </View>
 
         <View className="mt-4 flex flex-col gap-2">

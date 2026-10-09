@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { Layers, ChevronRight, Leaf, Sparkles } from 'lucide-react-taro'
+import { Layers, ChevronRight, Leaf, Sparkles, ChartBar } from 'lucide-react-taro'
 import { fragmentGroups } from '@/data/fragments'
 
 const IndexPage = () => {
@@ -44,6 +44,21 @@ const IndexPage = () => {
               </View>
             ))}
           </View>
+        </View>
+
+        {/* 学习进度入口 */}
+        <View
+          className="flex flex-row items-center gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm mt-4"
+          onClick={() => Taro.navigateTo({ url: '/pages/progress/index' })}
+        >
+          <View className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
+            <ChartBar size={18} color="#5B8C7B" />
+          </View>
+          <View className="flex-1">
+            <Text className="block text-lg font-semibold text-foreground">我的学习进度</Text>
+            <Text className="block text-lg text-muted-foreground mt-1">练习次数 / 技术完成度 / 分数走势</Text>
+          </View>
+          <ChevronRight size={16} color="#9AA19A" />
         </View>
 
         {/* 理念卡 */}

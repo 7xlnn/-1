@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { ClipboardList, RefreshCw } from 'lucide-react-taro'
+import { ClipboardList, RefreshCw, BookOpenCheck } from 'lucide-react-taro'
 import { cases } from '@/data/cases'
 import { Network } from '@/network'
 import { ThoughtRecordCard } from '@/components/thought-record-card'
@@ -21,6 +21,8 @@ const MoodRecordPage = () => {
   const caseId = router.params.caseId ?? ''
   const index = Number(router.params.index)
   const c = cases.find(x => x.id === caseId)
+
+  const sessionHomework = c?.sessions.find(s => s.index === index)?.homework ?? ''
 
   const [week, setWeek] = useState<WeekData | null>(() => {
     try {
@@ -121,6 +123,21 @@ const MoodRecordPage = () => {
             <Button className="mt-4 rounded-full" onClick={loadRecords}>
               <Text className="text-base text-primary-foreground">重新加载</Text>
             </Button>
+          </View>
+        )}
+
+        {sessionHomework && (
+          <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3">
+            <View className="flex flex-row items-center gap-2 mb-2">
+              <BookOpenCheck size={16} color="#5B8C7B" />
+              <Text className="text-lg font-semibold text-foreground">本次会谈布置的作业</Text>
+            </View>
+            <Text className="block text-base leading-relaxed" style={{ color: '#3C423E' }}>
+              {sessionHomework}
+            </Text>
+            <Text className="block text-sm mt-2" style={{ color: '#6B6F68' }}>
+              第 {index} 次会谈结束时，您给来访者布置了以上作业，可据此核对下一次的完成情况。
+            </Text>
           </View>
         )}
 

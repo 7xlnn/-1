@@ -42,6 +42,30 @@ export interface MoodRecordPayload {
   sessionGoal?: string;
 }
 
+/** 完整咨询结束时的目标核对与作业布置 */
+export interface SessionCheckDto {
+  /** 已达成目标 */
+  metGoals: string[];
+  /** 未达成/需改进目标 */
+  unmetGoals: string[];
+  /** 本周布置给来访者的作业 */
+  homework: string;
+}
+
+/** 追问督导的入参 */
+export interface SupervisorAskPayload {
+  /** 咨询主题/练习标题 */
+  title: string;
+  /** 来访者姓名 */
+  clientName: string;
+  /** 原始督导报告的正文 */
+  report: string;
+  /** 咨询师的追加提问 */
+  question: string;
+  /** 可选的关键对话片段（用于针对性点评） */
+  excerpt?: string;
+}
+
 /** 与前端 ThoughtRecordEntry 对应的单条记录 */
 export interface ThoughtRecordEntryDto {
   date: string;
@@ -161,11 +185,29 @@ ${stateLines.length ? stateLines.join('\n') : ''}
     return { scores, feedback };
   }
 
+  /** 解析完整咨询的目标核对 JSON 块 */
+  private parseSessionCheck(raw: string): SessionCheckDto | null {
+    const match = raw.match(/<SESSCHECK>([\s\S]*?)<\/SESSCHECK>/);
+    if (!match) return null;
+    try {
+      const p = JSON.parse(match[1].trim()) as Record<string, unknown>;
+      const asStr = (v: unknown, fallback: string): string => (v === null || v === undefined ? fallback : String(v));
+      const asList = (v: unknown): string[] => (Array.isArray(v) ? v.map(i => String(i)).slice(0, 6) : []);
+      return {
+        metGoals: asList(p.metGoals),
+        unmetGoals: asList(p.unmetGoals),
+        homework: asStr(p.homework, '')
+      };
+    } catch {
+      return null;
+    }
+  }
+
   /** 督导反馈 */
   async feedback(
     payload: FeedbackPayload,
     headers: Record<string, string>
-  ): Promise<{ feedback: string; scores: Record<string, number> | null }> {
+  ): Promise<{ feedback: string; scores: Record<string, number> | null; sessionCheck?: SessionCheckDto | null }> {
     const client = this.buildClient(HeaderUtils.extractForwardHeaders(headers));
     const c = payload.profile;
     const transcript = payload.messages
@@ -175,6 +217,7 @@ ${stateLines.length ? stateLines.join('\n') : ''}
     const sessionInfo = payload.sessionTitle
       ? `这是完整咨询中的第${payload.sessionTitle}`
       : '这是一次片段练习';
+    const isSession = payload.taskType === 'session';
 
     const system = `你是一位资深的认知行为疗法（CBT）督导师，拥有丰富的教学经验，正在督导一位新手咨询师学生。你温暖但要求专业，反馈具体、可操作，依据 Judith Beck《认知疗法：基础与应用》及 CBT 通用胜任力标准。`;
 
@@ -197,6 +240,10 @@ ${transcript}
 ${payload.userWork ? `咨询师在结束后提交的作答如下：\n${payload.userWork}` : ''}
 
 请你完成督导反馈。${this.taskRubric(payload.taskType)}
+${isSession ? `\n本次是一场完整咨询的会谈，除了技能反馈外，请额外对本次会谈做一次「目标核对」：依据上面的会话目标与对话证据，判断哪些目标已逐步达成、哪些仍待推进，并为来访者布置一份具体的「下周作业」。把结果放在输出最末尾，严格使用如下标签包裹一段 JSON，不要添加任何额外说明：
+<SESSCHECK>
+{"metGoals":["..."],"unmetGoals":["..."],"homework":"具体作业内容"}
+</SESSCHECK>` : ''}
 
 首先，依据以下 6 个维度为学生本次表现打分（每项 0-10 的整数，可含半分向上取整，严格依据对话证据，避免普遍给高分）：
 ${CbtService.SCORE_DIMENSIONS.map((d, i) => `${i + 1}. ${d.key}（${d.label}）`).join('\n')}
@@ -223,7 +270,36 @@ ${CbtService.SCORE_DIMENSIONS.map((d, i) => `${i + 1}. ${d.key}（${d.label}）`
       ],
       { model: 'doubao-seed-2-0-pro-260215', temperature: 0.6 }
     );
-    return this.parseScoredOutput(res.content);
+    const { scores, feedback } = this.parseScoredOutput(res.content);
+    const sessionCheck = isSession ? this.parseSessionCheck(res.content) : null;
+    return { feedback, scores, sessionCheck };
+  }
+
+  /** 追加追问督导：在已生成的督导报告基础上，教练式回答咨询师的具体疑问 */
+  async askSupervisor(
+    payload: SupervisorAskPayload,
+    headers: Record<string, string>
+  ): Promise<{ reply: string }> {
+    const client = this.buildClient(HeaderUtils.extractForwardHeaders(headers));
+    const system = `你是一位资深、富有教学同理心的认知行为疗法（CBT）督导师，正在带教一位新手咨询师学生。你以"教练"而非"裁判"的口吻回答，直接回应学生的疑问：先简要点出问题所在，再具体示范"这个时刻可以怎么说"，必要时给出第二步追问思路。语气温暖、措辞专业但口语化，不绕弯子，不需要复述整份报告。回答控制在 200 字以内。`;
+    const userPrompt = `【练习主题】${payload.title}
+【来访者】${payload.clientName}
+【此前督导给出的反馈】
+${payload.report}
+${payload.excerpt ? `【咨询师想重点请教的关键片段】\n${payload.excerpt}` : ''}
+
+【咨询师的追问】
+${payload.question}
+
+请以督导师身份，直接、具体地回答这位咨询师的追问，并给出"可以说出口的话"示例。`;
+    const res = await client.invoke(
+      [
+        { role: 'system', content: system },
+        { role: 'user', content: userPrompt }
+      ],
+      { model: 'doubao-seed-2-0-pro-260215', temperature: 0.5 }
+    );
+    return { reply: res.content.trim() };
   }
 
   /** 把数值收敛为 0-100 的整数 */

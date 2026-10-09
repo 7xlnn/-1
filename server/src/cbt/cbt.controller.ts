@@ -1,5 +1,5 @@
 import { Body, Controller, Headers, Post, HttpCode } from '@nestjs/common';
-import { CbtService, ChatPayload, FeedbackPayload, MoodRecordPayload } from './cbt.service';
+import { CbtService, ChatPayload, FeedbackPayload, MoodRecordPayload, SupervisorAskPayload } from './cbt.service';
 
 @Controller('cbt')
 export class CbtController {
@@ -40,5 +40,15 @@ export class CbtController {
       body.totalSessions
     );
     return this.cbtService.generateMoodRecord(body, headers);
+  }
+
+  @Post('ask-supervisor')
+  @HttpCode(200)
+  askSupervisor(
+    @Body() body: SupervisorAskPayload,
+    @Headers() headers: Record<string, string>
+  ) {
+    console.log('[CBT ASK-SUPERVISOR] title:', body.title, 'question:', body.question?.slice(0, 30));
+    return this.cbtService.askSupervisor(body, headers);
   }
 }
