@@ -11,7 +11,12 @@ export default defineAppConfig({
     'pages/case-detail/index',
     'pages/session-brief/index',
     'pages/mood-record/index',
-    'pages/progress/index'
+    'pages/progress/index',
+    'pages/identity/index',
+    'pages/homework/index',
+    'pages/homework-detail/index',
+    'pages/teacher/index',
+    'pages/teacher-grade/index'
   ],
   window: {
     backgroundTextStyle: 'light',

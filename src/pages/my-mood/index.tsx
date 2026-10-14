@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { HeartPulse, Plus, X, Check, Trash2, PencilLine } from 'lucide-react-taro'
+import { HeartPulse, Plus, X, Check, Trash2, PencilLine, Send, CircleCheck } from 'lucide-react-taro'
 import { ThoughtRecordCard } from '@/components/thought-record-card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { COGNITIVE_DISTORTIONS, CBT_GUIDE_QUESTIONS } from '@/data/mood-record'
 import type { ThoughtRecordEntry } from '@/data/mood-record'
+import { submitAsStudent, ensureStudentName } from '@/services/homework'
 
 const STORAGE_KEY = 'my-mood-week'
 
@@ -117,6 +118,47 @@ const MyMoodPage = () => {
     persist(entries.filter((_, idx) => idx !== i))
   }
 
+  const [submittingIdx, setSubmittingIdx] = useState<number | null>(null)
+  const [submittedKeys, setSubmittedKeys] = useState<string[]>([])
+
+  const submitEntry = async (e: ThoughtRecordEntry, i: number) => {
+    if (submittingIdx !== null || submittedKeys.includes(`${e.date}-${i}`)) return
+    if (!ensureStudentName()) return
+    setSubmittingIdx(i)
+    try {
+      const usedQuestionLabel =
+        e.usedQuestion !== null ? CBT_GUIDE_QUESTIONS[e.usedQuestion - 1] : ''
+      await submitAsStudent({
+        type: 'mood',
+        title: e.date ? `情绪周记 · ${e.date}` : '情绪周记',
+        content: {
+          date: e.date,
+          situation: e.situation,
+          automaticThought: e.automaticThought,
+          thoughtBelief: e.thoughtBelief,
+          emotion: e.emotion,
+          emotionIntensity: e.emotionIntensity,
+          distortions: e.distortions,
+          usedQuestion: e.usedQuestion,
+          usedQuestionLabel,
+          adaptiveResponse: e.adaptiveResponse,
+          responseBelief: e.responseBelief,
+          resultBelief: e.resultBelief,
+          resultEmotion: e.resultEmotion,
+          resultEmotionIntensity: e.resultEmotionIntensity,
+          resultAction: e.resultAction,
+        },
+      })
+      setSubmittedKeys((prev) => [...prev, `${e.date}-${i}`])
+      Taro.showToast({ title: '已提交给老师', icon: 'success' })
+    } catch (err) {
+      console.error('[mood submit error]', err)
+      Taro.showToast({ title: '提交失败，请重试', icon: 'none' })
+    } finally {
+      setSubmittingIdx(null)
+    }
+  }
+
   const toggleDistortion = (d: string) => {
     const has = draft.distortions.includes(d)
     setDraft({
@@ -192,6 +234,27 @@ const MyMoodPage = () => {
                   <PencilLine size={14} color="#5B8C7B" />
                   <Text className="ml-1 text-sm text-foreground">编辑</Text>
                 </View>
+                {submittedKeys.includes(`${e.date}-${i}`) ? (
+                  <View className="flex flex-row items-center rounded-full px-3 py-2" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
+                    <CircleCheck size={14} color="#5B8C7B" />
+                    <Text className="ml-1 text-sm text-primary">已提交</Text>
+                  </View>
+                ) : (
+                  <View
+                    className="flex flex-row items-center rounded-full px-3 py-2"
+                    style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}
+                    onClick={() => submitEntry(e, i)}
+                  >
+                    {submittingIdx === i ? (
+                      <Text className="ml-1 text-sm text-primary">提交中…</Text>
+                    ) : (
+                      <>
+                        <Send size={14} color="#5B8C7B" />
+                        <Text className="ml-1 text-sm text-primary">提交给老师</Text>
+                      </>
+                    )}
+                  </View>
+                )}
                 <View
                   className="flex flex-row items-center rounded-full px-3 py-2"
                   style={{ backgroundColor: 'rgba(192,101,79,0.12)' }}

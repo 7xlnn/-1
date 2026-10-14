@@ -1,0 +1,37 @@
+import { Controller, Get, Post, Body, Param, ParseIntPipe, Query } from '@nestjs/common'
+import { HomeworkService, CreateSubmissionDto, GradeDto } from './homework.service'
+
+@Controller('homework')
+export class HomeworkController {
+  constructor(private readonly homework: HomeworkService) {}
+
+  // 学生提交作业
+  @Post('submit')
+  submit(@Body() dto: CreateSubmissionDto) {
+    return this.homework.create(dto)
+  }
+
+  // 学生查看自己的提交
+  @Get('mine')
+  mine(@Query('studentId') studentId: string) {
+    return this.homework.listMine(studentId || '')
+  }
+
+  // 教师查看全部（可带 status）
+  @Get('teacher/list')
+  teacherList(@Query('status') status?: string) {
+    return this.homework.listTeacher(status)
+  }
+
+  // 详情（学生/教师共用）
+  @Get('detail/:id')
+  detail(@Param('id', ParseIntPipe) id: number) {
+    return this.homework.detail(id)
+  }
+
+  // 教师批改
+  @Post('grade/:id')
+  grade(@Param('id', ParseIntPipe) id: number, @Body() dto: GradeDto) {
+    return this.homework.grade(id, dto)
+  }
+}

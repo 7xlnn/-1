@@ -8,7 +8,8 @@ import { allExercises } from '@/data/fragments'
 import { cases } from '@/data/cases'
 import { useSessionStore } from '@/store/session'
 import { useProgressStore } from '@/store/progress'
-import { CircleCheck, ChartNoAxesColumn, ClipboardList, House, ListChecks } from 'lucide-react-taro'
+import { CircleCheck, ChartNoAxesColumn, ClipboardList, House, ListChecks, Send } from 'lucide-react-taro'
+import { submitAsStudent, ensureStudentName } from '@/services/homework'
 
 /** 六维评分定义（与后端一致） */
 const DIMENSIONS = [
@@ -73,6 +74,8 @@ const FeedbackPage = () => {
   const [asks, setAsks] = useState<AskItem[]>([])
   const [askInput, setAskInput] = useState('')
   const [asking, setAsking] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   const isFragment = !!fragmentId
   const ex = isFragment ? allExercises.find(e => e.id === fragmentId) : null
@@ -190,6 +193,32 @@ const FeedbackPage = () => {
   const avg = scores
     ? Math.round((DIMENSIONS.reduce((sum, d) => sum + Number(scores[d.key] ?? 0), 0) / DIMENSIONS.length) * 10) / 10
     : null
+
+  const submitHomework = async () => {
+    if (submitting || submitted) return
+    if (!ensureStudentName()) return
+    setSubmitting(true)
+    try {
+      await submitAsStudent({
+        type: isFragment ? 'fragment' : 'session',
+        title,
+        content: {
+          summary: title,
+          messages,
+          feedback: data.feedback,
+          scores: data.scores,
+          sessionCheck: data.sessionCheck,
+        },
+      })
+      setSubmitted(true)
+      Taro.showToast({ title: '已提交给老师', icon: 'success' })
+    } catch (e) {
+      console.error('[homework submit error]', e)
+      Taro.showToast({ title: '提交失败，请重试', icon: 'none' })
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <View className="min-h-full bg-background pb-10">
@@ -327,9 +356,29 @@ const FeedbackPage = () => {
         </View>
 
         <View className="mt-4 flex flex-col gap-2">
-          <Button className="w-full rounded-full" onClick={backHome}>
-            <House size={16} color="#ffffff" />
-            <Text className="text-lg text-primary-foreground ml-1">返回首页继续练习</Text>
+          <Button
+            variant={submitted ? 'outline' : 'default'}
+            className="w-full rounded-full"
+            onClick={submitHomework}
+            disabled={submitting || submitted}
+          >
+            {submitted ? (
+              <>
+                <CircleCheck size={16} color="#5B8C7B" />
+                <Text className="text-base ml-1">已提交，等待老师批改</Text>
+              </>
+            ) : (
+              <>
+                <Send size={16} color={submitting ? '#9AA19A' : '#ffffff'} />
+                <Text className={`text-base ml-1 ${submitting ? 'text-muted-foreground' : 'text-primary-foreground'}`}>
+                  {submitting ? '提交中…' : '提交给老师'}
+                </Text>
+              </>
+            )}
+          </Button>
+          <Button variant="ghost" className="w-full rounded-full" onClick={backHome}>
+            <House size={16} color="#5B8C7B" />
+            <Text className="text-base text-primary ml-1">返回首页继续练习</Text>
           </Button>
         </View>
       </View>
