@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, ParseIntPipe, Query } from '@nestjs/common'
+import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe, Query } from '@nestjs/common'
 import { HomeworkService, CreateSubmissionDto, GradeDto } from './homework.service'
 
 @Controller('homework')
@@ -27,6 +27,12 @@ export class HomeworkController {
   @Get('detail/:id')
   detail(@Param('id', ParseIntPipe) id: number) {
     return this.homework.detail(id)
+  }
+
+  // 删除作业（教师用）
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.homework.remove(id)
   }
 
   // 教师批改

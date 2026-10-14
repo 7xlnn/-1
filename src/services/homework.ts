@@ -99,6 +99,15 @@ export function ensureStudentName(): boolean {
   return false
 }
 
+// 删除作业（教师端）
+export async function deleteSubmission(id: number): Promise<void> {
+  const res = await Network.request({
+    url: `${BASE}/${id}`,
+    method: 'DELETE',
+  })
+  console.log('[homework] delete response:', res.data)
+}
+
 /** 通用提交：自动带上学生身份，返回新作业 id */
 export async function submitAsStudent(params: {
   type: SubmissionType

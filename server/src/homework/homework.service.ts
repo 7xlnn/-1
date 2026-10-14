@@ -107,6 +107,15 @@ export class HomeworkService {
     return { submission: data as SubmissionRow }
   }
 
+  // 删除作业（教师用，删除后学生端也不再显示）
+  async remove(id: number) {
+    if (!Number.isFinite(id)) throw new BadRequestException('id 不合法')
+    await this.detail(id) // 确保存在
+    const { error } = await this.client().from('submissions').delete().eq('id', id)
+    if (error) throw new Error(`删除失败: ${error.message}`)
+    return { ok: true, id }
+  }
+
   // 教师批改
   async grade(id: number, dto: GradeDto) {
     if (!Number.isFinite(id)) throw new BadRequestException('id 不合法')

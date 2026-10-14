@@ -5,9 +5,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { fetchTeacherList, SubmissionListItem, SubmissionType } from '@/services/homework'
+import { fetchTeacherList, deleteSubmission, SubmissionListItem, SubmissionType } from '@/services/homework'
 import { useIdentity } from '@/store/identity'
-import { ClipboardCheck, ChevronRight, LogOut } from 'lucide-react-taro'
+import { ClipboardCheck, ChevronRight, LogOut, Trash2 } from 'lucide-react-taro'
 
 const TYPE_LABEL: Record<SubmissionType, string> = {
   fragment: '片段练习',
@@ -57,6 +57,25 @@ export default function TeacherPage() {
     Taro.navigateTo({ url: `/pages/teacher-grade/index?id=${id}` })
   }
 
+  const handleDelete = (id: number) => {
+    Taro.showModal({
+      title: '删除作业',
+      content: '确定删除这条作业吗？删除后学生端也将不再显示。',
+      confirmText: '删除',
+      confirmColor: '#c0654f',
+      success: async (r) => {
+        if (!r.confirm) return
+        try {
+          await deleteSubmission(id)
+          Taro.showToast({ title: '已删除', icon: 'success' })
+          load()
+        } catch (e) {
+          Taro.showToast({ title: '删除失败', icon: 'none' })
+        }
+      },
+    })
+  }
+
   const renderList = (list: SubmissionListItem[], isPendingTab: boolean) => {
     if (loading) {
       return (
@@ -95,6 +114,16 @@ export default function TeacherPage() {
                     {formatTime(item.created_at)}
                     {!isPendingTab && item.score !== null && ` · ${item.score}分`}
                   </Text>
+                </View>
+                <View
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(192,101,79,0.1)' }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDelete(item.id)
+                  }}
+                >
+                  <Trash2 size={16} color="#c0654f" />
                 </View>
                 <ChevronRight size={18} color="#9AA19A" />
               </View>

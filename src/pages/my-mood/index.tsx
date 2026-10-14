@@ -118,44 +118,64 @@ const MyMoodPage = () => {
     persist(entries.filter((_, idx) => idx !== i))
   }
 
-  const [submittingIdx, setSubmittingIdx] = useState<number | null>(null)
-  const [submittedKeys, setSubmittedKeys] = useState<string[]>([])
-
-  const submitEntry = async (e: ThoughtRecordEntry, i: number) => {
-    if (submittingIdx !== null || submittedKeys.includes(`${e.date}-${i}`)) return
-    if (!ensureStudentName()) return
-    setSubmittingIdx(i)
+  const [weeklySubmitted, setWeeklySubmitted] = useState<boolean>(() => {
     try {
-      const usedQuestionLabel =
-        e.usedQuestion !== null ? CBT_GUIDE_QUESTIONS[e.usedQuestion - 1] : ''
+      return !!Taro.getStorageSync('my-mood-week-submitted')
+    } catch {
+      return false
+    }
+  })
+  const [submitting, setSubmitting] = useState(false)
+
+  // 每周只打包提交一次：把本周所有记录作为 records 数组整体提交，教师端完整可见
+  const submitWeek = async () => {
+    if (submitting || weeklySubmitted) return
+    if (!ensureStudentName()) return
+    if (entries.length === 0) {
+      Taro.showToast({ title: '本周还没有记录，先记一次吧', icon: 'none' })
+      return
+    }
+    const dates = entries.map((e) => e.date).filter(Boolean).sort()
+    const weekLabel = dates.length
+      ? `${dates[0]} ~ ${dates[dates.length - 1]}`
+      : '本周'
+    setSubmitting(true)
+    try {
+      const records = entries.map((e) => ({
+        date: e.date,
+        situation: e.situation,
+        automaticThought: e.automaticThought,
+        thoughtBelief: e.thoughtBelief,
+        emotion: e.emotion,
+        emotionIntensity: e.emotionIntensity,
+        distortions: e.distortions,
+        usedQuestion: e.usedQuestion,
+        usedQuestionLabel:
+          e.usedQuestion !== null ? CBT_GUIDE_QUESTIONS[e.usedQuestion - 1] : '',
+        adaptiveResponse: e.adaptiveResponse,
+        responseBelief: e.responseBelief,
+        resultBelief: e.resultBelief,
+        resultEmotion: e.resultEmotion,
+        resultEmotionIntensity: e.resultEmotionIntensity,
+        resultAction: e.resultAction,
+      }))
       await submitAsStudent({
         type: 'mood',
-        title: e.date ? `情绪周记 · ${e.date}` : '情绪周记',
-        content: {
-          date: e.date,
-          situation: e.situation,
-          automaticThought: e.automaticThought,
-          thoughtBelief: e.thoughtBelief,
-          emotion: e.emotion,
-          emotionIntensity: e.emotionIntensity,
-          distortions: e.distortions,
-          usedQuestion: e.usedQuestion,
-          usedQuestionLabel,
-          adaptiveResponse: e.adaptiveResponse,
-          responseBelief: e.responseBelief,
-          resultBelief: e.resultBelief,
-          resultEmotion: e.resultEmotion,
-          resultEmotionIntensity: e.resultEmotionIntensity,
-          resultAction: e.resultAction,
-        },
+        title: `本周情绪周记 · ${entries.length}条`,
+        content: { records, week: weekLabel, count: entries.length },
       })
-      setSubmittedKeys((prev) => [...prev, `${e.date}-${i}`])
-      Taro.showToast({ title: '已提交给老师', icon: 'success' })
+      setWeeklySubmitted(true)
+      try {
+        Taro.setStorageSync('my-mood-week-submitted', true)
+      } catch {
+        // ignore
+      }
+      Taro.showToast({ title: '本周记录已提交', icon: 'success' })
     } catch (err) {
       console.error('[mood submit error]', err)
       Taro.showToast({ title: '提交失败，请重试', icon: 'none' })
     } finally {
-      setSubmittingIdx(null)
+      setSubmitting(false)
     }
   }
 
@@ -214,6 +234,25 @@ const MyMoodPage = () => {
           <Text className="ml-2 text-lg text-primary-foreground">记录一次情绪</Text>
         </Button>
 
+        <Button
+          variant={weeklySubmitted ? 'outline' : 'default'}
+          className="w-full rounded-full mt-3"
+          onClick={submitWeek}
+          disabled={submitting || weeklySubmitted}
+        >
+          {weeklySubmitted ? (
+            <>
+              <CircleCheck size={18} color="#5B8C7B" />
+              <Text className="ml-2 text-lg text-primary">本周记录已提交 {entries.length} 条</Text>
+            </>
+          ) : (
+            <>
+              <Send size={18} color="#ffffff" />
+              <Text className="ml-2 text-lg text-primary-foreground">提交本周记录给老师</Text>
+            </>
+          )}
+        </Button>
+
         {entries.length === 0 && (
           <View className="bg-card rounded-2xl border border-border p-8 shadow-sm mt-3 flex flex-col items-center">
             <Text className="block text-lg text-muted-foreground text-center leading-relaxed">
@@ -234,27 +273,6 @@ const MyMoodPage = () => {
                   <PencilLine size={14} color="#5B8C7B" />
                   <Text className="ml-1 text-sm text-foreground">编辑</Text>
                 </View>
-                {submittedKeys.includes(`${e.date}-${i}`) ? (
-                  <View className="flex flex-row items-center rounded-full px-3 py-2" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
-                    <CircleCheck size={14} color="#5B8C7B" />
-                    <Text className="ml-1 text-sm text-primary">已提交</Text>
-                  </View>
-                ) : (
-                  <View
-                    className="flex flex-row items-center rounded-full px-3 py-2"
-                    style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}
-                    onClick={() => submitEntry(e, i)}
-                  >
-                    {submittingIdx === i ? (
-                      <Text className="ml-1 text-sm text-primary">提交中…</Text>
-                    ) : (
-                      <>
-                        <Send size={14} color="#5B8C7B" />
-                        <Text className="ml-1 text-sm text-primary">提交给老师</Text>
-                      </>
-                    )}
-                  </View>
-                )}
                 <View
                   className="flex flex-row items-center rounded-full px-3 py-2"
                   style={{ backgroundColor: 'rgba(192,101,79,0.12)' }}
