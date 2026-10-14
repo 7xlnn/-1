@@ -13,6 +13,39 @@ import { useIdentity } from '@/store/identity'
 
 const storageKeyFor = (role: string) => `my-mood-week-${role}`
 const submittedKeyFor = (role: string) => `my-mood-week-submitted-${role}`
+// 角色隔离改造前的通用 key（学生历史记录存于此）
+const LEGACY_STORAGE_KEY = 'my-mood-week'
+const LEGACY_SUBMITTED_KEY = 'my-mood-week-submitted'
+
+/** 一次性迁移：把旧的通用周记数据归到学生角色下 */
+const migrateLegacyEntries = (role: string): ThoughtRecordEntry[] => {
+  if (role !== 'student') return []
+  try {
+    const legacy = Taro.getStorageSync(LEGACY_STORAGE_KEY)
+    if (Array.isArray(legacy) && legacy.length > 0) {
+      Taro.setStorageSync(storageKeyFor('student'), legacy)
+      Taro.removeStorageSync(LEGACY_STORAGE_KEY)
+      return legacy
+    }
+  } catch {
+    /* 忽略迁移异常 */
+  }
+  return []
+}
+
+const migrateLegacySubmitted = (role: string): boolean => {
+  if (role !== 'student') return false
+  try {
+    if (Taro.getStorageSync(LEGACY_SUBMITTED_KEY)) {
+      Taro.setStorageSync(submittedKeyFor('student'), true)
+      Taro.removeStorageSync(LEGACY_SUBMITTED_KEY)
+      return true
+    }
+  } catch {
+    /* 忽略迁移异常 */
+  }
+  return false
+}
 
 /** 步进器：用于 0-100 的相信/强度数字 */
 const Stepper = ({
@@ -64,9 +97,9 @@ const MyMoodPage = () => {
 
   const [entries, setEntries] = useState<ThoughtRecordEntry[]>(() => {
     try {
-      return Taro.getStorageSync(storageKeyFor(role)) || []
+      return Taro.getStorageSync(storageKeyFor(role)) || migrateLegacyEntries(role)
     } catch {
-      return []
+      return migrateLegacyEntries(role)
     }
   })
   const [editing, setEditing] = useState(false)
@@ -127,9 +160,9 @@ const MyMoodPage = () => {
 
   const [weeklySubmitted, setWeeklySubmitted] = useState<boolean>(() => {
     try {
-      return !!Taro.getStorageSync(submittedKeyFor(role))
+      return !!Taro.getStorageSync(submittedKeyFor(role)) || migrateLegacySubmitted(role)
     } catch {
-      return false
+      return migrateLegacySubmitted(role)
     }
   })
   const [submitting, setSubmitting] = useState(false)
