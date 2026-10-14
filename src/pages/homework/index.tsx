@@ -108,7 +108,7 @@ export default function HomeworkPage() {
                     {item.status === 'graded' ? (
                       <View className="flex flex-row items-center gap-1">
                         <CircleCheck size={16} color="#5B8C7B" />
-                        <Text className="block text-primary text-lg font-semibold">{item.score}</Text>
+                        <Text className="block text-primary text-base font-medium">已批改</Text>
                       </View>
                     ) : (
                       <View className="flex flex-row items-center gap-1">

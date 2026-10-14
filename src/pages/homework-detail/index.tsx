@@ -58,7 +58,7 @@ export default function HomeworkDetailPage() {
                 <View className="flex flex-row items-center gap-2 mb-2">
                   <Badge variant="secondary">{TYPE_LABEL[detail.type] || detail.type}</Badge>
                   {detail.status === 'graded' ? (
-                    <Badge>已批改 · {detail.score}分</Badge>
+                    <Badge>已批改</Badge>
                   ) : (
                     <Badge variant="outline">待批改</Badge>
                   )}
