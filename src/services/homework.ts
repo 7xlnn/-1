@@ -9,7 +9,7 @@ export interface SubmissionListItem {
   student_name: string
   type: SubmissionType
   title: string
-  status: 'pending' | 'graded'
+  status: 'pending' | 'graded' | 'reviewed'
   score: number | null
   comment: string | null
   graded_at: string | null
@@ -51,7 +51,7 @@ export async function fetchMySubmissions(studentId: string): Promise<SubmissionL
 }
 
 // 教师查看列表
-export async function fetchTeacherList(status?: 'pending' | 'graded'): Promise<SubmissionListItem[]> {
+export async function fetchTeacherList(status?: 'pending' | 'graded' | 'processed'): Promise<SubmissionListItem[]> {
   const qs = status ? `?status=${status}` : ''
   const res = await Network.request({
     url: `${BASE}/teacher/list${qs}`,
@@ -97,6 +97,15 @@ export function ensureStudentName(): boolean {
     },
   })
   return false
+}
+
+// 情绪记录：标记为已查看（教师端，不评分）
+export async function markSubmissionReviewed(id: number): Promise<void> {
+  const res = await Network.request({
+    url: `${BASE}/review/${id}`,
+    method: 'POST',
+  })
+  console.log('[homework] review response:', res.data)
 }
 
 // 删除作业（教师端）

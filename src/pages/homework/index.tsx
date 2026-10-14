@@ -105,17 +105,20 @@ export default function HomeworkPage() {
                       <Badge variant="secondary">{TYPE_LABEL[item.type] || item.type}</Badge>
                       <Text className="block text-foreground text-base font-medium flex-1">{item.title}</Text>
                     </View>
-                    {item.status === 'graded' ? (
+                    {item.status === 'reviewed' ? (
                       <View className="flex flex-row items-center gap-1">
                         <CircleCheck size={16} color="#5B8C7B" />
-                        <Text className="block text-primary text-base font-medium">
-                          {item.type === 'mood' ? '已批改' : `已批改 · ${item.score}`}
-                        </Text>
+                        <Text className="block text-primary text-base font-medium">已查看</Text>
+                      </View>
+                    ) : item.status === 'graded' ? (
+                      <View className="flex flex-row items-center gap-1">
+                        <CircleCheck size={16} color="#5B8C7B" />
+                        <Text className="block text-primary text-base font-medium">已批改</Text>
                       </View>
                     ) : (
                       <View className="flex flex-row items-center gap-1">
                         <Clock size={14} color="#9AA19A" />
-                        <Text className="block text-muted-foreground text-sm">待批改</Text>
+                        <Text className="block text-muted-foreground text-sm">待处理</Text>
                       </View>
                     )}
                   </View>

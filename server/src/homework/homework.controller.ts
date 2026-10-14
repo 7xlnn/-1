@@ -35,6 +35,12 @@ export class HomeworkController {
     return this.homework.remove(id)
   }
 
+  // 情绪记录：标记为已查看（不评分）
+  @Post('review/:id')
+  review(@Param('id', ParseIntPipe) id: number) {
+    return this.homework.markReviewed(id)
+  }
+
   // 教师批改
   @Post('grade/:id')
   grade(@Param('id', ParseIntPipe) id: number, @Body() dto: GradeDto) {

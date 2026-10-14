@@ -86,8 +86,11 @@ export class HomeworkService {
       .select('id, student_name, type, title, status, score, created_at')
       .order('created_at', { ascending: false })
       .limit(300)
-    if (status === 'pending' || status === 'graded') {
-      query = query.eq('status', status)
+    if (status === 'pending') {
+      query = query.eq('status', 'pending')
+    } else if (status === 'graded') {
+      // “已处理”包含：已批改（有评分的作业）与已查看（情绪记录）
+      query = query.in('status', ['graded', 'reviewed'])
     }
     const { data, error } = await query
     if (error) throw new Error(`查询失败: ${error.message}`)
@@ -114,6 +117,22 @@ export class HomeworkService {
     const { error } = await this.client().from('submissions').delete().eq('id', id)
     if (error) throw new Error(`删除失败: ${error.message}`)
     return { ok: true, id }
+  }
+
+  // 情绪记录：教师仅查看，标记为已查看（不评分）
+  async markReviewed(id: number) {
+    const row = await this.detail(id)
+    if (row.submission.type !== 'mood') {
+      throw new BadRequestException('仅情绪记录可标记为已查看')
+    }
+    const { data, error } = await this.client()
+      .from('submissions')
+      .update({ status: 'reviewed', graded_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('id,status')
+      .single()
+    if (error) throw new Error(`操作失败: ${error.message}`)
+    return { ok: true, id: (data as { id: number }).id }
   }
 
   // 教师批改

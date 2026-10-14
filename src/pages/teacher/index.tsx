@@ -23,7 +23,7 @@ function formatTime(iso: string) {
 }
 
 export default function TeacherPage() {
-  const { role, teacherName, setRole } = useIdentity()
+  const { role, setRole } = useIdentity()
   const [pending, setPending] = useState<SubmissionListItem[]>([])
   const [graded, setGraded] = useState<SubmissionListItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,7 +34,7 @@ export default function TeacherPage() {
     try {
       const [p, g] = await Promise.all([
         fetchTeacherList('pending'),
-        fetchTeacherList('graded'),
+        fetchTeacherList('processed'),
       ])
       setPending(p)
       setGraded(g)
@@ -90,7 +90,7 @@ export default function TeacherPage() {
         <View className="flex flex-col items-center gap-2 py-12">
           <ClipboardCheck size={36} color="#9AA19A" />
           <Text className="block text-sm text-muted-foreground">
-            {isPendingTab ? '暂无待批改作业' : '暂无已批改记录'}
+            {isPendingTab ? '暂无待处理作业' : '暂无已处理记录'}
           </Text>
         </View>
       )
@@ -112,7 +112,7 @@ export default function TeacherPage() {
                   <Text className="block text-sm text-muted-foreground mb-2">{item.title}</Text>
                   <Text className="block text-xs text-muted-foreground">
                     {formatTime(item.created_at)}
-                    {!isPendingTab ? (item.type === 'mood' ? ' · 已批改' : ` · ${item.score}分`) : ''}
+                    {!isPendingTab ? ` · ${item.status === 'reviewed' ? '已查看' : '已批改'}` : ''}
                   </Text>
                 </View>
                 <View
@@ -140,7 +140,7 @@ export default function TeacherPage() {
         <View className="flex flex-row items-center justify-between">
           <View>
             <Text className="block text-white text-xl font-semibold">教师工作台</Text>
-            <Text className="block text-white text-base mt-1 opacity-85">{teacherName || '老师'} · 学生作业批改</Text>
+            <Text className="block text-white text-base mt-1 opacity-85">学生作业查看与反馈</Text>
           </View>
           <View
             className="w-9 h-9 rounded-full flex items-center justify-center"
@@ -156,9 +156,9 @@ export default function TeacherPage() {
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="w-full">
             <TabsTrigger value="pending">
-              待批改{pending.length > 0 ? ` (${pending.length})` : ''}
+              待处理{pending.length > 0 ? ` (${pending.length})` : ''}
             </TabsTrigger>
-            <TabsTrigger value="graded">已批改</TabsTrigger>
+            <TabsTrigger value="graded">已处理</TabsTrigger>
           </TabsList>
           <TabsContent value="pending">
             <View className="pt-3">{renderList(pending, true)}</View>

@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { SubmissionViewer } from '@/components/submission-viewer'
-import { fetchSubmission, gradeSubmission, SubmissionDetail, SubmissionType } from '@/services/homework'
-import { Minus, Plus, Eye } from 'lucide-react-taro'
+import { fetchSubmission, gradeSubmission, markSubmissionReviewed, SubmissionDetail, SubmissionType } from '@/services/homework'
+import { Minus, Plus, Eye, CircleCheck } from 'lucide-react-taro'
 
 const TYPE_LABEL: Record<SubmissionType, string> = {
   fragment: '片段练习',
@@ -65,7 +65,22 @@ export default function TeacherGradePage() {
   }
 
   const graded = detail?.status === 'graded'
+  const reviewed = detail?.status === 'reviewed'
   const isMood = detail?.type === 'mood'
+
+  const markReviewed = async () => {
+    if (submitting) return
+    setSubmitting(true)
+    try {
+      await markSubmissionReviewed(id)
+      Taro.showToast({ title: '已标记为已查看', icon: 'success' })
+      setTimeout(() => Taro.navigateBack(), 700)
+    } catch (e) {
+      Taro.showToast({ title: '操作失败', icon: 'none' })
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <View className="min-h-screen bg-page pb-28">
@@ -83,6 +98,7 @@ export default function TeacherGradePage() {
                   <Badge variant="secondary">{TYPE_LABEL[detail.type] || detail.type}</Badge>
                   <Text className="block text-base font-semibold text-foreground">{detail.student_name}</Text>
                   {graded && <Badge>已批改</Badge>}
+                  {reviewed && <Badge>已查看</Badge>}
                 </View>
                 <Text className="block text-lg text-foreground font-medium">{detail.title}</Text>
               </CardContent>
@@ -138,7 +154,7 @@ export default function TeacherGradePage() {
                 <Card>
                   <CardContent className="p-4 flex flex-col items-center gap-2">
                     <Eye size={20} color="#9AA19A" />
-                    <Text className="block text-sm text-muted-foreground">情绪记录仅查看，不参与评分</Text>
+                    <Text className="block text-sm text-muted-foreground">情绪记录不评分，查看后请在底部标记为已查看</Text>
                   </CardContent>
                 </Card>
               )}
@@ -146,7 +162,7 @@ export default function TeacherGradePage() {
         )}
       </View>
 
-      {!loading && detail && !isMood && (
+      {!loading && detail && (
         <View
           style={{
             position: 'fixed',
@@ -161,9 +177,16 @@ export default function TeacherGradePage() {
             zIndex: 100,
           }}
         >
-          <Button className="flex-1" onClick={submit} disabled={submitting}>
-            <Text className="block">{submitting ? '提交中…' : graded ? '更新批改' : '提交批改'}</Text>
-          </Button>
+          {isMood ? (
+            <Button className="flex-1" variant={reviewed ? 'outline' : 'default'} onClick={markReviewed} disabled={submitting || reviewed}>
+              {reviewed ? <CircleCheck size={16} color="#3d4a3f" className="mr-1" /> : <Eye size={16} color="#ffffff" className="mr-1" />}
+              <Text className="block">{reviewed ? '已查看' : submitting ? '提交中…' : '标记为已查看'}</Text>
+            </Button>
+          ) : (
+            <Button className="flex-1" onClick={submit} disabled={submitting}>
+              <Text className="block">{submitting ? '提交中…' : graded ? '更新批改' : '提交批改'}</Text>
+            </Button>
+          )}
         </View>
       )}
     </View>
