@@ -17,6 +17,8 @@ export interface ThoughtRecordEntry {
   emotionIntensity: number
   /** 适合的反应：识别到的认知歪曲 */
   distortions: string[]
+  /** 适合的反应：使用了底部 7 个引导问题中的哪一个（1-7），未做反应时为 null */
+  usedQuestion: number | null
   /** 适合的反应：对自动思维形成的平衡反应 */
   adaptiveResponse: string
   /** 对适应性反应的相信程度（0-100），未做反应时为 null */
@@ -39,6 +41,17 @@ export interface ThoughtRecordWeek {
   weekLabel: string
   entries: ThoughtRecordEntry[]
 }
+
+/** 情绪三栏记录表底部 7 个引导问题（用于形成对自动思维的平衡反应） */
+export const CBT_GUIDE_QUESTIONS: string[] = [
+  '有什么证据证明这个自动思维是真的？什么证明它是假的？',
+  '有没有替代性的解释？',
+  '可能发生的最糟糕的情况是什么？我能怎么应对？',
+  '可能发生的最好的结果是什么？',
+  '最现实的结果是什么？',
+  '如果相信自动思维会有什么影响？改变会有什么影响？',
+  '如果____（朋友）在这种情境下有了这种自动思维，我会对他/她说什么？'
+]
 
 /** 常见认知歪曲清单（用于咨询师自我记录时勾选） */
 export const COGNITIVE_DISTORTIONS: string[] = [

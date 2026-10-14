@@ -6,7 +6,7 @@ import { ThoughtRecordCard } from '@/components/thought-record-card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import { COGNITIVE_DISTORTIONS } from '@/data/mood-record'
+import { COGNITIVE_DISTORTIONS, CBT_GUIDE_QUESTIONS } from '@/data/mood-record'
 import type { ThoughtRecordEntry } from '@/data/mood-record'
 
 const STORAGE_KEY = 'my-mood-week'
@@ -44,6 +44,7 @@ const emptyDraft = (): ThoughtRecordEntry => ({
   emotion: '',
   emotionIntensity: 70,
   distortions: [],
+  usedQuestion: null,
   adaptiveResponse: '',
   responseBelief: null,
   resultBelief: null,
@@ -336,18 +337,98 @@ const MyMoodPage = () => {
                   </View>
                 </View>
 
+                {/* 适合的反应：先选用的引导问题，再填反应（对应三栏表"先选问题再反应"） */}
                 <View>
                   <Text className="block text-sm text-primary font-medium mb-1">
-                    适合的反应（选作）：换个角度，我可以怎么想？
+                    适合的反应：先用哪个问题来挑战自动思维？
                   </Text>
-                  <Textarea
-                    className="rounded-xl bg-card border border-border text-base"
-                    value={draft.adaptiveResponse}
-                    autoHeight
-                    onInput={e => setDraft({ ...draft, adaptiveResponse: e.detail.value })}
-                    placeholder="证据是什么？有没有别的解释？最坏会怎样、我能应对吗？"
-                  />
+                  <View className="flex flex-col gap-2">
+                    {CBT_GUIDE_QUESTIONS.map((q, idx) => {
+                      const active = draft.usedQuestion === idx + 1
+                      return (
+                        <View
+                          key={q}
+                          className="rounded-xl border px-3 py-2"
+                          style={
+                            active
+                              ? { backgroundColor: '#5b8c7b', borderColor: '#5b8c7b' }
+                              : { backgroundColor: '#ffffff', borderColor: '#e8e4da' }
+                          }
+                          onClick={() =>
+                            setDraft({
+                              ...draft,
+                              usedQuestion: active ? null : idx + 1,
+                              adaptiveResponse: active ? '' : draft.adaptiveResponse
+                            })
+                          }
+                        >
+                          <Text
+                            className="block text-sm leading-relaxed"
+                            style={{ color: active ? '#ffffff' : '#343a35' }}
+                          >
+                            {idx + 1}. {q}
+                          </Text>
+                        </View>
+                      )
+                    })}
+                  </View>
+                  {draft.usedQuestion !== null && (
+                    <View className="mt-3">
+                      <Text className="block text-sm text-primary font-medium mb-1">
+                        基于该问题，我的平衡想法是？
+                      </Text>
+                      <Textarea
+                        className="rounded-xl bg-card border border-border text-base"
+                        value={draft.adaptiveResponse}
+                        autoHeight
+                        onInput={e => setDraft({ ...draft, adaptiveResponse: e.detail.value })}
+                        placeholder="用你选的问题，重新审视这条自动思维…"
+                      />
+                      <View className="flex flex-row items-center justify-between mt-2">
+                        <Text className="text-base text-muted-foreground">对这个反应的相信程度</Text>
+                        <Stepper
+                          value={draft.responseBelief ?? 50}
+                          onChange={v => setDraft({ ...draft, responseBelief: v })}
+                        />
+                      </View>
+                    </View>
+                  )}
                 </View>
+
+                {/* 结果部分：三个问题，只有完成反应后才出现 */}
+                {draft.usedQuestion !== null && (
+                  <View className="rounded-xl p-3" style={{ backgroundColor: 'rgba(91,140,123,0.07)' }}>
+                    <Text className="block text-sm text-primary font-medium mb-2">结果</Text>
+                    <View className="flex flex-row items-center justify-between mb-2">
+                      <Text className="text-base text-foreground">现在对自动思维的相信</Text>
+                      <Stepper
+                        value={draft.resultBelief ?? 30}
+                        onChange={v => setDraft({ ...draft, resultBelief: v })}
+                      />
+                    </View>
+                    <View className="mb-2">
+                      <Text className="block text-sm text-primary font-medium mb-1">现在情绪及强度</Text>
+                      <Input
+                        className="rounded-xl bg-card text-base"
+                        value={draft.resultEmotion}
+                        placeholder="如 焦虑 30%"
+                        onInput={e => setDraft({ ...draft, resultEmotion: e.detail.value })}
+                      />
+                    </View>
+                    <View>
+                      <Text className="block text-sm text-primary font-medium mb-1">
+                        你会做什么（或做了什么）？
+                      </Text>
+                      <Textarea
+                        className="rounded-xl bg-card border border-border text-base"
+                        value={draft.resultAction}
+                        autoHeight
+                        onInput={e => setDraft({ ...draft, resultAction: e.detail.value })}
+                        placeholder="做了平衡反应后，你会怎么做？"
+                      />
+                    </View>
+                  </View>
+                )}
               </View>
             </ScrollView>
 

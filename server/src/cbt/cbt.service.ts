@@ -75,6 +75,7 @@ export interface ThoughtRecordEntryDto {
   emotion: string;
   emotionIntensity: number;
   distortions: string[];
+  usedQuestion: number | null;
   adaptiveResponse: string;
   responseBelief: number | null;
   resultBelief: number | null;
@@ -302,6 +303,14 @@ ${payload.question}
     return { reply: res.content.trim() };
   }
 
+  /** 解析所用引导问题编号（1-7，未做反应/无值为 null） */
+  private parseUsedQuestion(v: unknown): number | null {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return null;
+    if (n < 1 || n > 7) return null;
+    return Math.round(n);
+  }
+
   /** 把数值收敛为 0-100 的整数 */
   private clamp100(v: unknown): number {
     const n = Number(v);
@@ -326,6 +335,7 @@ ${payload.question}
         distortions: Array.isArray(item.distortions)
           ? item.distortions.map(d => String(d)).slice(0, 6)
           : [],
+        usedQuestion: this.parseUsedQuestion(item.usedQuestion),
         adaptiveResponse: String(item.adaptiveResponse ?? ''),
         responseBelief:
           item.responseBelief === null || item.responseBelief === undefined || item.responseBelief === ''
@@ -379,7 +389,10 @@ ${c.automaticThoughts.map(t => `· ${t}`).join('\n')}
 5. 生成 5 到 7 条，覆盖最近一周（可包含工作日与周末、白天与夜晚）。
 6. ${responseStage}
 7. 「认知歪曲」distortions 只在来访者已做适合反应、或明显可标注时填写，使用简短中文标签（如 灾难化、非黑即白、以偏概全、读心术、应该陈述、情绪推理），早期可留空数组。
-8. 只输出规定的 JSON，不要输出任何解释或多余文字。`;
+8. 来访者若在做「适合的反应」，是通过某个引导问题来形成平衡想法的。可用的 7 个引导问题（编号 1-7）：
+   1 证据（有什么证据证明自动思维是真的/假的）、2 替代解释、3 最坏情况（且我能应对）、4 最好结果、5 最现实的结果、6 影响（相信与改变各有什么影响）、7 朋友视角（若朋友有此想法会对他说什么）。
+   usedQuestion 填来访者实际用到的那个问题编号（1-7）；若未做反应则填 null。
+9. 只输出规定的 JSON，不要输出任何解释或多余文字。`;
 
     const userPrompt = `这是你第 ${payload.sessionIndex}/${payload.totalSessions} 次咨询${
       payload.sessionTitle ? `（${payload.sessionTitle}）` : ''
@@ -396,6 +409,7 @@ ${c.automaticThoughts.map(t => `· ${t}`).join('\n')}
     "emotion": "焦虑",
     "emotionIntensity": 80,
     "distortions": ["灾难化"],
+    "usedQuestion": 3,
     "adaptiveResponse": "平衡后的想法，没有则空字符串",
     "responseBelief": null,
     "resultBelief": null,

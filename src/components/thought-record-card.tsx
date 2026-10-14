@@ -1,5 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import type { ThoughtRecordEntry } from '@/data/mood-record'
+import { CBT_GUIDE_QUESTIONS } from '@/data/mood-record'
 
 /** 强度条：0-100 映射为 5 段宽度 */
 const barWidth = (v: number) => {
@@ -66,6 +67,13 @@ export const ThoughtRecordCard = ({ entry, showResponse = true }: Props) => {
       {hasResponse && (
         <>
           <View className="my-3 h-px bg-border" />
+          {entry.usedQuestion != null && entry.usedQuestion >= 1 && entry.usedQuestion <= 7 && (
+            <View className="rounded-xl p-2 mt-1" style={{ backgroundColor: 'rgba(91,140,123,0.08)' }}>
+              <Text className="block text-sm text-primary font-medium">
+                用第 {entry.usedQuestion} 个问题：{CBT_GUIDE_QUESTIONS[entry.usedQuestion - 1]}
+              </Text>
+            </View>
+          )}
           <FieldBlock label="适合的反应" value={entry.adaptiveResponse} />
           <Text className="block text-sm text-muted-foreground mt-1">
             对反应的相信程度：{entry.responseBelief ?? '—'}%
