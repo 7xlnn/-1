@@ -5,13 +5,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { useIdentity } from '@/store/identity'
-import { GraduationCap, UserRound, ShieldCheck } from 'lucide-react-taro'
+import { GraduationCap, UserRound, ShieldCheck, LockKeyhole } from 'lucide-react-taro'
+
+/** 教师口令（统一修改入口）。仅设此处即可全局生效。 */
+export const TEACHER_PASSCODE = 'cbt2024'
 
 export default function IdentityPage() {
   const { role, studentName, teacherName, setRole, setStudentName, setTeacherName } = useIdentity()
   const [nameInput, setNameInput] = useState(role === 'teacher' ? teacherName : studentName)
-  const [tapCount, setTapCount] = useState(0)
   const [showTeacher, setShowTeacher] = useState(role === 'teacher')
+  const [teacherOpen, setTeacherOpen] = useState(false)
+  const [passcode, setPasscode] = useState('')
 
   const handleSave = () => {
     const name = nameInput.trim()
@@ -25,25 +29,27 @@ export default function IdentityPage() {
     setTimeout(() => Taro.navigateBack(), 500)
   }
 
-  // 隐藏入口：连续点 logo 7 次解锁教师角色
-  const onLogoTap = () => {
-    if (showTeacher) return
-    const next = tapCount + 1
-    if (next >= 7) {
-      setShowTeacher(true)
-      Taro.showToast({ title: '已解锁教师身份', icon: 'none' })
-    }
-    setTapCount(next)
-  }
-
   const chooseRole = (r: 'student' | 'teacher') => {
     setRole(r)
     setNameInput(r === 'teacher' ? teacherName : studentName)
   }
 
+  // 教师登录：输入口令解锁
+  const unlockTeacher = () => {
+    if (passcode.trim() === TEACHER_PASSCODE) {
+      setShowTeacher(true)
+      setRole('teacher')
+      setTeacherOpen(false)
+      setPasscode('')
+      Taro.showToast({ title: '教师身份已解锁', icon: 'success' })
+    } else {
+      Taro.showToast({ title: '口令错误', icon: 'none' })
+    }
+  }
+
   return (
     <View className="min-h-screen bg-page px-4 pt-6 pb-16">
-      <View className="flex flex-col items-center mb-6" onClick={onLogoTap}>
+      <View className="flex flex-col items-center mb-6">
         <View
           className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
           style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}
@@ -114,10 +120,41 @@ export default function IdentityPage() {
         )}
       </View>
 
+      {/* 教师口令登录（隐藏入口，取代连点解锁） */}
       {!showTeacher && (
-        <Text className="block text-center text-xs text-muted-foreground mt-10">
-          （版本 v1.0 · 学生端）
-        </Text>
+        <View className="mt-10">
+          {teacherOpen ? (
+            <Card>
+              <CardContent className="p-4">
+                <Text className="block text-sm text-muted-foreground mb-2">输入教师口令</Text>
+                <View className="bg-secondary rounded-lg px-3 py-1 mb-3">
+                  <Input
+                    password
+                    value={passcode}
+                    onInput={(e) => setPasscode(e.detail.value)}
+                    placeholder="请输入口令"
+                    confirmType="done"
+                  />
+                </View>
+                <View className="flex flex-row gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setTeacherOpen(false)}>
+                    <Text className="block">取消</Text>
+                  </Button>
+                  <Button className="flex-1" onClick={unlockTeacher}>
+                    <Text className="block">解锁</Text>
+                  </Button>
+                </View>
+              </CardContent>
+            </Card>
+          ) : (
+            <Button variant="ghost" className="w-full" onClick={() => setTeacherOpen(true)}>
+              <View className="flex flex-row items-center justify-center gap-1">
+                <LockKeyhole size={14} color="#9AA19A" />
+                <Text className="text-sm text-muted-foreground">教师登录</Text>
+              </View>
+            </Button>
+          )}
+        </View>
       )}
     </View>
   )
