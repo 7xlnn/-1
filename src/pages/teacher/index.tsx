@@ -112,7 +112,7 @@ export default function TeacherPage() {
                   <Text className="block text-sm text-muted-foreground mb-2">{item.title}</Text>
                   <Text className="block text-xs text-muted-foreground">
                     {formatTime(item.created_at)}
-                    {!isPendingTab ? ' · 已批改' : ''}
+                    {!isPendingTab ? (item.type === 'mood' ? ' · 已批改' : ` · ${item.score}分`) : ''}
                   </Text>
                 </View>
                 <View

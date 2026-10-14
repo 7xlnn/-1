@@ -118,6 +118,10 @@ export class HomeworkService {
 
   // 教师批改
   async grade(id: number, dto: GradeDto) {
+    const row = await this.detail(id)
+    if (row.submission.type === 'mood') {
+      throw new BadRequestException('情绪记录不参与评分')
+    }
     if (!Number.isFinite(id)) throw new BadRequestException('id 不合法')
     const score = Math.round(Number(dto.score))
     if (!Number.isFinite(score) || score < 0 || score > 100) {
