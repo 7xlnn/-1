@@ -49,6 +49,7 @@ const emptyDraft = (): ThoughtRecordEntry => ({
   responseBelief: null,
   resultBelief: null,
   resultEmotion: '',
+  resultEmotionIntensity: null,
   resultAction: ''
 })
 
@@ -251,7 +252,7 @@ const MyMoodPage = () => {
             <ScrollView scrollY className="flex-1" style={{ flex: 1, minHeight: 0 }}>
               <View className="px-5 pb-8 flex flex-col gap-4">
                 <View>
-                  <Text className="block text-sm text-primary font-medium mb-1">日期 / 时间</Text>
+                  <Text className="block text-base text-primary font-medium mb-1">日期 / 时间</Text>
                   <Input
                     className="rounded-xl bg-card text-base"
                     value={draft.date}
@@ -261,7 +262,7 @@ const MyMoodPage = () => {
                 </View>
 
                 <View>
-                  <Text className="block text-sm text-primary font-medium mb-1">
+                  <Text className="block text-base text-primary font-medium mb-1">
                     情境：发生了什么？有什么生理感觉？
                   </Text>
                   <Textarea
@@ -274,7 +275,7 @@ const MyMoodPage = () => {
                 </View>
 
                 <View>
-                  <Text className="block text-sm text-primary font-medium mb-1">
+                  <Text className="block text-base text-primary font-medium mb-1">
                     自动思维：脑中闪过什么念头或画面？
                   </Text>
                   <Textarea
@@ -285,7 +286,7 @@ const MyMoodPage = () => {
                     placeholder="此时我的脑中在想什么？"
                   />
                   <View className="flex flex-row items-center justify-between mt-2">
-                    <Text className="text-base text-muted-foreground">对它的相信程度</Text>
+                    <Text className="text-sm text-muted-foreground">对它的相信程度</Text>
                     <Stepper
                       value={draft.thoughtBelief}
                       onChange={v => setDraft({ ...draft, thoughtBelief: v })}
@@ -294,7 +295,7 @@ const MyMoodPage = () => {
                 </View>
 
                 <View>
-                  <Text className="block text-sm text-primary font-medium mb-1">情绪</Text>
+                  <Text className="block text-base text-primary font-medium mb-1">情绪</Text>
                   <Input
                     className="rounded-xl bg-card text-base"
                     value={draft.emotion}
@@ -302,7 +303,7 @@ const MyMoodPage = () => {
                     onInput={e => setDraft({ ...draft, emotion: e.detail.value })}
                   />
                   <View className="flex flex-row items-center justify-between mt-2">
-                    <Text className="text-base text-muted-foreground">情绪强烈程度</Text>
+                    <Text className="text-sm text-muted-foreground">情绪强烈程度</Text>
                     <Stepper
                       value={draft.emotionIntensity}
                       onChange={v => setDraft({ ...draft, emotionIntensity: v })}
@@ -311,7 +312,7 @@ const MyMoodPage = () => {
                 </View>
 
                 <View>
-                  <Text className="block text-sm text-primary font-medium mb-2">
+                  <Text className="block text-base text-primary font-medium mb-2">
                     认知歪曲（选作，可多选）
                   </Text>
                   <View className="flex flex-row flex-wrap gap-2">
@@ -339,7 +340,7 @@ const MyMoodPage = () => {
 
                 {/* 适合的反应：先选用的引导问题，再填反应（对应三栏表"先选问题再反应"） */}
                 <View>
-                  <Text className="block text-sm text-primary font-medium mb-1">
+                  <Text className="block text-base text-primary font-medium mb-1">
                     适合的反应：先用哪个问题来挑战自动思维？
                   </Text>
                   <View className="flex flex-col gap-2">
@@ -374,7 +375,7 @@ const MyMoodPage = () => {
                   </View>
                   {draft.usedQuestion !== null && (
                     <View className="mt-3">
-                      <Text className="block text-sm text-primary font-medium mb-1">
+                      <Text className="block text-base text-primary font-medium mb-1">
                         基于该问题，我的平衡想法是？
                       </Text>
                       <Textarea
@@ -385,7 +386,7 @@ const MyMoodPage = () => {
                         placeholder="用你选的问题，重新审视这条自动思维…"
                       />
                       <View className="flex flex-row items-center justify-between mt-2">
-                        <Text className="text-base text-muted-foreground">对这个反应的相信程度</Text>
+                        <Text className="text-sm text-muted-foreground">对这个反应的相信程度</Text>
                         <Stepper
                           value={draft.responseBelief ?? 50}
                           onChange={v => setDraft({ ...draft, responseBelief: v })}
@@ -398,7 +399,7 @@ const MyMoodPage = () => {
                 {/* 结果部分：三个问题，只有完成反应后才出现 */}
                 {draft.usedQuestion !== null && (
                   <View className="rounded-xl p-3" style={{ backgroundColor: 'rgba(91,140,123,0.07)' }}>
-                    <Text className="block text-sm text-primary font-medium mb-2">结果</Text>
+                    <Text className="block text-base text-primary font-medium mb-2">结果</Text>
                     <View className="flex flex-row items-center justify-between mb-2">
                       <Text className="text-base text-foreground">现在对自动思维的相信</Text>
                       <Stepper
@@ -407,16 +408,23 @@ const MyMoodPage = () => {
                       />
                     </View>
                     <View className="mb-2">
-                      <Text className="block text-sm text-primary font-medium mb-1">现在情绪及强度</Text>
+                      <Text className="block text-base text-primary font-medium mb-1">现在的情绪</Text>
                       <Input
                         className="rounded-xl bg-card text-base"
                         value={draft.resultEmotion}
-                        placeholder="如 焦虑 30%"
+                        placeholder="如 焦虑、平静"
                         onInput={e => setDraft({ ...draft, resultEmotion: e.detail.value })}
                       />
+                      <View className="flex flex-row items-center justify-between mt-2">
+                        <Text className="text-sm text-muted-foreground">情绪强烈程度</Text>
+                        <Stepper
+                          value={draft.resultEmotionIntensity ?? 30}
+                          onChange={v => setDraft({ ...draft, resultEmotionIntensity: v })}
+                        />
+                      </View>
                     </View>
                     <View>
-                      <Text className="block text-sm text-primary font-medium mb-1">
+                      <Text className="block text-base text-primary font-medium mb-1">
                         你会做什么（或做了什么）？
                       </Text>
                       <Textarea

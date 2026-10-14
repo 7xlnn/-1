@@ -80,6 +80,7 @@ export interface ThoughtRecordEntryDto {
   responseBelief: number | null;
   resultBelief: number | null;
   resultEmotion: string;
+  resultEmotionIntensity: number | null;
   resultAction: string;
 }
 
@@ -346,6 +347,12 @@ ${payload.question}
             ? null
             : this.clamp100(item.resultBelief),
         resultEmotion: String(item.resultEmotion ?? ''),
+        resultEmotionIntensity:
+          item.resultEmotionIntensity === null ||
+          item.resultEmotionIntensity === undefined ||
+          item.resultEmotionIntensity === ''
+            ? null
+            : this.clamp100(item.resultEmotionIntensity),
         resultAction: String(item.resultAction ?? '')
       }));
     } catch {
@@ -413,7 +420,8 @@ ${c.automaticThoughts.map(t => `· ${t}`).join('\n')}
     "adaptiveResponse": "平衡后的想法，没有则空字符串",
     "responseBelief": null,
     "resultBelief": null,
-    "resultEmotion": "如 焦虑 40%，没有则空字符串",
+    "resultEmotion": "现在的情绪名字，如 焦虑，没有则空字符串",
+    "resultEmotionIntensity": 40,
     "resultAction": "做了什么，没有则空字符串"
   }
 ]

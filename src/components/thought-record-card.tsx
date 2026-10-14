@@ -85,6 +85,9 @@ export const ThoughtRecordCard = ({ entry, showResponse = true }: Props) => {
             </Text>
             <Text className="block text-base leading-relaxed text-foreground mt-1">
               现在情绪：{entry.resultEmotion || '—'}
+              {entry.resultEmotionIntensity != null
+                ? ` ${entry.resultEmotionIntensity}%`
+                : ''}
             </Text>
             <Text className="block text-base leading-relaxed text-foreground mt-1">
               行动：{entry.resultAction || '—'}

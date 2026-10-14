@@ -25,8 +25,10 @@ export interface ThoughtRecordEntry {
   responseBelief: number | null
   /** 结果：现在对自动思维的相信程度（0-100），未做反应时为 null */
   resultBelief: number | null
-  /** 结果：现在的情绪及强度（文本，如「焦虑 40%」） */
+  /** 结果：现在的情绪（名字，如「焦虑」「平静」） */
   resultEmotion: string
+  /** 结果：现在情绪的强烈程度（0-100） */
+  resultEmotionIntensity: number | null
   /** 结果：会做/做了什么 */
   resultAction: string
 }
