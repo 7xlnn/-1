@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/input'
 import { COGNITIVE_DISTORTIONS, CBT_GUIDE_QUESTIONS } from '@/data/mood-record'
 import type { ThoughtRecordEntry } from '@/data/mood-record'
 import { submitAsStudent, ensureStudentName } from '@/services/homework'
+import { useIdentity } from '@/store/identity'
 
-const STORAGE_KEY = 'my-mood-week'
+const storageKeyFor = (role: string) => `my-mood-week-${role}`
+const submittedKeyFor = (role: string) => `my-mood-week-submitted-${role}`
 
 /** 步进器：用于 0-100 的相信/强度数字 */
 const Stepper = ({
@@ -55,9 +57,14 @@ const emptyDraft = (): ThoughtRecordEntry => ({
 })
 
 const MyMoodPage = () => {
+  // 周记数据按角色隔离：学生与教师的周记互不串用
+  const { role } = useIdentity()
+  const isTeacher = role === 'teacher'
+  const storageKey = storageKeyFor(role)
+
   const [entries, setEntries] = useState<ThoughtRecordEntry[]>(() => {
     try {
-      return Taro.getStorageSync(STORAGE_KEY) || []
+      return Taro.getStorageSync(storageKeyFor(role)) || []
     } catch {
       return []
     }
@@ -81,7 +88,7 @@ const MyMoodPage = () => {
   const persist = (next: ThoughtRecordEntry[]) => {
     setEntries(next)
     try {
-      Taro.setStorageSync(STORAGE_KEY, next)
+      Taro.setStorageSync(storageKey, next)
     } catch {
       // ignore
     }
@@ -120,7 +127,7 @@ const MyMoodPage = () => {
 
   const [weeklySubmitted, setWeeklySubmitted] = useState<boolean>(() => {
     try {
-      return !!Taro.getStorageSync('my-mood-week-submitted')
+      return !!Taro.getStorageSync(submittedKeyFor(role))
     } catch {
       return false
     }
@@ -129,6 +136,10 @@ const MyMoodPage = () => {
 
   // 每周只打包提交一次：把本周所有记录作为 records 数组整体提交，教师端完整可见
   const submitWeek = async () => {
+    if (isTeacher) {
+      Taro.showToast({ title: '教师角色只记录自己的周记，不会提交给老师', icon: 'none' })
+      return
+    }
     if (submitting || weeklySubmitted) return
     if (!ensureStudentName()) return
     if (entries.length === 0) {
@@ -166,7 +177,7 @@ const MyMoodPage = () => {
       })
       setWeeklySubmitted(true)
       try {
-        Taro.setStorageSync('my-mood-week-submitted', true)
+        Taro.setStorageSync(submittedKeyFor(role), true)
       } catch {
         // ignore
       }
@@ -234,24 +245,26 @@ const MyMoodPage = () => {
           <Text className="ml-2 text-lg text-primary-foreground">记录一次情绪</Text>
         </Button>
 
-        <Button
-          variant={weeklySubmitted ? 'outline' : 'default'}
-          className="w-full rounded-full mt-3"
-          onClick={submitWeek}
-          disabled={submitting || weeklySubmitted}
-        >
-          {weeklySubmitted ? (
-            <>
-              <CircleCheck size={18} color="#5B8C7B" />
-              <Text className="ml-2 text-lg text-primary">本周记录已提交 {entries.length} 条</Text>
-            </>
-          ) : (
-            <>
-              <Send size={18} color="#ffffff" />
-              <Text className="ml-2 text-lg text-primary-foreground">提交本周记录给老师</Text>
-            </>
-          )}
-        </Button>
+        {!isTeacher && (
+          <Button
+            variant={weeklySubmitted ? 'outline' : 'default'}
+            className="w-full rounded-full mt-3"
+            onClick={submitWeek}
+            disabled={submitting || weeklySubmitted}
+          >
+            {weeklySubmitted ? (
+              <>
+                <CircleCheck size={18} color="#5B8C7B" />
+                <Text className="ml-2 text-lg text-primary">本周记录已提交 {entries.length} 条</Text>
+              </>
+            ) : (
+              <>
+                <Send size={18} color="#ffffff" />
+                <Text className="ml-2 text-lg text-primary-foreground">提交本周记录给老师</Text>
+              </>
+            )}
+          </Button>
+        )}
 
         {entries.length === 0 && (
           <View className="bg-card rounded-2xl border border-border p-8 shadow-sm mt-3 flex flex-col items-center">
