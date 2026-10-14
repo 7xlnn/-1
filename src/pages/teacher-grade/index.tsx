@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { SubmissionViewer } from '@/components/submission-viewer'
 import { fetchSubmission, gradeSubmission, SubmissionDetail, SubmissionType } from '@/services/homework'
-import { Minus, Plus } from 'lucide-react-taro'
+import { Minus, Plus, Eye } from 'lucide-react-taro'
 
 const TYPE_LABEL: Record<SubmissionType, string> = {
   fragment: '片段练习',
@@ -65,6 +65,7 @@ export default function TeacherGradePage() {
   }
 
   const graded = detail?.status === 'graded'
+  const isMood = detail?.type === 'mood'
 
   return (
     <View className="min-h-screen bg-page pb-28">
@@ -89,7 +90,8 @@ export default function TeacherGradePage() {
 
             <SubmissionViewer content={detail.content} />
 
-            <Card>
+            {!isMood ? (
+              <Card>
               <CardContent className="p-4">
                 <Text className="block text-base text-primary font-medium mb-3">评分</Text>
                 <View className="flex flex-row items-center justify-between mb-4">
@@ -132,11 +134,19 @@ export default function TeacherGradePage() {
                 </View>
               </CardContent>
             </Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-4 flex flex-col items-center gap-2">
+                    <Eye size={20} color="#9AA19A" />
+                    <Text className="block text-sm text-muted-foreground">情绪记录仅查看，不参与评分</Text>
+                  </CardContent>
+                </Card>
+              )}
           </>
         )}
       </View>
 
-      {!loading && detail && (
+      {!loading && detail && !isMood && (
         <View
           style={{
             position: 'fixed',

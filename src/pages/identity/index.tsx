@@ -8,11 +8,11 @@ import { useIdentity } from '@/store/identity'
 import { GraduationCap, UserRound, ShieldCheck, LockKeyhole } from 'lucide-react-taro'
 
 /** 教师口令（统一修改入口）。仅设此处即可全局生效。 */
-export const TEACHER_PASSCODE = 'cbt2024'
+export const TEACHER_PASSCODE = 'cbt2026'
 
 export default function IdentityPage() {
-  const { role, studentName, teacherName, setRole, setStudentName, setTeacherName } = useIdentity()
-  const [nameInput, setNameInput] = useState(role === 'teacher' ? teacherName : studentName)
+  const { role, studentName, setRole, setStudentName } = useIdentity()
+  const [nameInput, setNameInput] = useState(studentName)
   const [showTeacher, setShowTeacher] = useState(role === 'teacher')
   const [teacherOpen, setTeacherOpen] = useState(false)
   const [passcode, setPasscode] = useState('')
@@ -23,18 +23,17 @@ export default function IdentityPage() {
       Taro.showToast({ title: '请填写姓名', icon: 'none' })
       return
     }
-    if (role === 'teacher') setTeacherName(name)
-    else setStudentName(name)
+    setStudentName(name)
     Taro.showToast({ title: '已保存', icon: 'success' })
     setTimeout(() => Taro.navigateBack(), 500)
   }
 
   const chooseRole = (r: 'student' | 'teacher') => {
     setRole(r)
-    setNameInput(r === 'teacher' ? teacherName : studentName)
+    if (r === 'student') setNameInput(studentName)
   }
 
-  // 教师登录：输入口令解锁
+  // 教师登录：输入口令解锁（教师无需姓名）
   const unlockTeacher = () => {
     if (passcode.trim() === TEACHER_PASSCODE) {
       setShowTeacher(true)
@@ -60,7 +59,9 @@ export default function IdentityPage() {
             <GraduationCap size={30} color="#5B8C7B" />
           )}
         </View>
-        <Text className="block text-lg font-semibold text-foreground">身份设置</Text>
+        <Text className="block text-lg font-semibold text-foreground">
+          {role === 'teacher' ? '教师身份' : '身份设置'}
+        </Text>
       </View>
 
       {showTeacher && (
@@ -82,45 +83,48 @@ export default function IdentityPage() {
         </View>
       )}
 
-      <Card>
-        <CardContent className="p-4">
-          <Text className="block text-sm text-muted-foreground mb-2">
-            {role === 'teacher' ? '教师姓名' : '你的姓名'}
-          </Text>
-          <View className="bg-secondary rounded-lg px-3 py-1 mb-4">
-            <Input
-              value={nameInput}
-              onInput={(e) => setNameInput(e.detail.value)}
-              placeholder={role === 'teacher' ? '请输入教师姓名' : '提交作业时显示的姓名'}
-            />
-          </View>
-          <Text className="block text-xs text-muted-foreground leading-relaxed">
-            {role === 'teacher'
-              ? '教师可在工作台查看并批改学生提交的所有练习作业。'
-              : '你的练习记录与情绪周记会以这个姓名提交给教师，教师批改后可在「我的作业」查看分数与评语。'}
-          </Text>
-        </CardContent>
-      </Card>
+      {role !== 'teacher' ? (
+        <Card>
+          <CardContent className="p-4">
+            <Text className="block text-sm text-muted-foreground mb-2">你的姓名</Text>
+            <View className="bg-secondary rounded-lg px-3 py-1 mb-4">
+              <Input
+                value={nameInput}
+                onInput={(e) => setNameInput(e.detail.value)}
+                placeholder="提交作业时显示的姓名"
+              />
+            </View>
+            <Text className="block text-xs text-muted-foreground leading-relaxed">
+              你的练习记录与情绪周记会以这个姓名提交给教师，教师批改后可在「我的作业」查看分数与评语。
+            </Text>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-4">
+            <Text className="block text-sm text-muted-foreground leading-relaxed">
+              已通过口令解锁教师身份。教师可在工作台查看学生提交的全部练习与情绪周记。
+            </Text>
+          </CardContent>
+        </Card>
+      )}
 
       <View className="mt-5 flex flex-col gap-3">
-        <Button className="w-full" onClick={handleSave}>
-          <Text className="block">保存</Text>
-        </Button>
-        {role === 'teacher' && (
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => Taro.navigateTo({ url: '/pages/teacher/index' })}
-          >
+        {role === 'teacher' ? (
+          <Button className="w-full" onClick={() => Taro.navigateTo({ url: '/pages/teacher/index' })}>
             <View className="flex flex-row items-center justify-center gap-1">
-              <UserRound size={16} color="#5B8C7B" />
-              <Text className="block">进入教师工作台</Text>
+              <UserRound size={16} color="#ffffff" />
+              <Text className="block text-primary-foreground">进入教师工作台</Text>
             </View>
+          </Button>
+        ) : (
+          <Button className="w-full" onClick={handleSave}>
+            <Text className="block">保存</Text>
           </Button>
         )}
       </View>
 
-      {/* 教师口令登录（隐藏入口，取代连点解锁） */}
+      {/* 教师口令登录（隐藏入口） */}
       {!showTeacher && (
         <View className="mt-10">
           {teacherOpen ? (
