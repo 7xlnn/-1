@@ -299,7 +299,7 @@ const FeedbackPage = () => {
 
         {/* 文字反馈（纯文本结构化渲染，避免 HTML 乱码） */}
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3">
-          {parseBlocks(data.feedback || '').map((b, i) => (
+          {parseBlocks((data.feedback || '').replace(/<SESSCHECK>[\s\S]*?<\/SESSCHECK>/g, '')).map((b, i) => (
             <Text
               key={i}
               className="block w-full"

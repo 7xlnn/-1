@@ -274,7 +274,11 @@ ${CbtService.SCORE_DIMENSIONS.map((d, i) => `${i + 1}. ${d.key}（${d.label}）`
     );
     const { scores, feedback } = this.parseScoredOutput(res.content);
     const sessionCheck = isSession ? this.parseSessionCheck(res.content) : null;
-    return { feedback, scores, sessionCheck };
+    return {
+      feedback: feedback.replace(/<SESSCHECK>[\s\S]*?<\/SESSCHECK>/g, ''),
+      scores,
+      sessionCheck
+    };
   }
 
   /** 追加追问督导：在已生成的督导报告基础上，教练式回答咨询师的具体疑问 */
