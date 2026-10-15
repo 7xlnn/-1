@@ -134,6 +134,14 @@ export default function TeacherPage() {
         {TYPE_ORDER.map((t) => {
           const group = list.filter(i => i.type === t)
           if (group.length === 0) return null
+          // 二级：按主题/个案（group 字段）分组，并保持出现顺序
+          const gs: { k: string; items: SubmissionListItem[] }[] = []
+          group.forEach(it => {
+            const k = it.group?.trim() || '未分类'
+            let g = gs.find(x => x.k === k)
+            if (!g) { g = { k, items: [] }; gs.push(g) }
+            g.items.push(it)
+          })
           return (
             <View key={t} className="mb-4">
               <View className="flex flex-row items-center gap-2 mb-2 px-1">
@@ -141,9 +149,44 @@ export default function TeacherPage() {
                 <Text className="block text-base font-semibold text-foreground">{TYPE_LABEL[t]}</Text>
                 <Text className="block text-sm text-muted-foreground">{group.length}</Text>
               </View>
-              <View className="flex flex-col gap-3">
-                {group.map(item => renderItemCard(item, isPendingTab))}
-              </View>
+              {gs.map(g => {
+                // 三级（完整咨询专用）：个案下按阶段 sub 分组
+                const subs: { k: string; items: SubmissionListItem[] }[] = []
+                g.items.forEach(it => {
+                  const sk = it.sub?.trim() || ''
+                  let sg = subs.find(x => x.k === sk)
+                  if (!sg) { sg = { k: sk, items: [] }; subs.push(sg) }
+                  sg.items.push(it)
+                })
+                const hasSub = subs.length > 1 || (subs.length === 1 && subs[0].k !== '')
+                return (
+                  <View key={g.k} className="mb-2">
+                    <View className="flex flex-row items-center gap-2 px-2 py-1">
+                      <Text className="block text-sm font-semibold text-foreground">{g.k}</Text>
+                      <Text className="block text-xs text-muted-foreground">{g.items.length}</Text>
+                    </View>
+                    <View className="flex flex-col gap-3">
+                      {subs.map(sg => {
+                        if (!hasSub) {
+                          return <View key={g.k + sg.k} className="flex flex-col gap-3">{sg.items.map(item => renderItemCard(item, isPendingTab))}</View>
+                        }
+                        return (
+                          <View key={g.k + sg.k}>
+                            <View className="flex flex-row items-center gap-2 px-3 py-1">
+                              <View className="w-1 h-3 rounded-full bg-muted" />
+                              <Text className="block text-xs font-medium text-muted-foreground">{sg.k || '其他阶段'}</Text>
+                              <Text className="block text-xs text-muted-foreground">{sg.items.length}</Text>
+                            </View>
+                            <View className="flex flex-col gap-3 mt-1">
+                              {sg.items.map(item => renderItemCard(item, isPendingTab))}
+                            </View>
+                          </View>
+                        )
+                      })}
+                    </View>
+                  </View>
+                )
+              })}
             </View>
           )
         })}

@@ -9,6 +9,8 @@ export interface SubmissionListItem {
   student_name: string
   type: SubmissionType
   title: string
+  group: string | null
+  sub: string | null
   status: 'pending' | 'graded' | 'reviewed'
   score: number | null
   comment: string | null
@@ -29,6 +31,8 @@ export async function submitHomework(params: {
   studentId: string
   type: SubmissionType
   title: string
+  group?: string
+  sub?: string
   content: unknown
 }): Promise<number> {
   const res = await Network.request({
@@ -121,6 +125,8 @@ export async function deleteSubmission(id: number): Promise<void> {
 export async function submitAsStudent(params: {
   type: SubmissionType
   title: string
+  group?: string
+  sub?: string
   content: unknown
 }): Promise<number> {
   const { studentName, studentId } = useIdentity.getState()
@@ -129,6 +135,8 @@ export async function submitAsStudent(params: {
     studentId,
     type: params.type,
     title: params.title,
+    group: params.group,
+    sub: params.sub,
     content: params.content,
   })
 }

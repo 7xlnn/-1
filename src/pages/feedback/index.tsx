@@ -203,6 +203,8 @@ const FeedbackPage = () => {
       await submitAsStudent({
         type: isConcept ? 'conceptualization' : isFragment ? 'fragment' : 'session',
         title,
+        group: isFragment ? (ex?.categoryName ?? (isConcept ? '认知概念化' : '')) : (currentCase?.title ?? '完整咨询'),
+        sub: !isFragment ? (session?.title ?? '') : undefined,
         content: isConcept
           ? {
               summary: title,

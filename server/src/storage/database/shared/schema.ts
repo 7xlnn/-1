@@ -19,6 +19,8 @@ export const submissions = pgTable(
 		student_id: varchar("student_id", { length: 128 }).notNull(),
 		type: varchar("type", { length: 32 }).notNull(),
 		title: varchar("title", { length: 255 }).notNull(),
+		group: varchar("group", { length: 128 }),
+		sub: varchar("sub", { length: 128 }),
 		content: jsonb("content").notNull(),
 		status: varchar("status", { length: 16 }).notNull().default("pending"),
 		score: integer("score"),

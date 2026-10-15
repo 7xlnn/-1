@@ -6,6 +6,8 @@ export interface CreateSubmissionDto {
   studentId: string
   type: string
   title: string
+  group?: string
+  sub?: string
   content: unknown
 }
 
@@ -20,6 +22,8 @@ export interface SubmissionRow {
   student_id: string
   type: string
   title: string
+  group: string | null
+  sub: string | null
   content: unknown
   status: string
   score: number | null
@@ -57,6 +61,8 @@ export class HomeworkService {
         student_id: studentId.slice(0, 128),
         type,
         title: title.slice(0, 255),
+        group: (dto.group || '').trim() || null,
+        sub: (dto.sub || '').trim() || null,
         content: dto.content,
         status: 'pending',
       })
@@ -71,7 +77,7 @@ export class HomeworkService {
     if (!studentId) throw new BadRequestException('缺少学生标识')
     const { data, error } = await this.client()
       .from('submissions')
-      .select('id, student_name, type, title, status, score, comment, graded_at, created_at')
+      .select('id, student_name, type, title, group, sub, status, score, comment, graded_at, created_at')
       .eq('student_id', studentId)
       .order('created_at', { ascending: false })
       .limit(200)
@@ -83,7 +89,7 @@ export class HomeworkService {
   async listTeacher(status?: string) {
     let query = this.client()
       .from('submissions')
-      .select('id, student_name, type, title, status, score, created_at')
+      .select('id, student_name, type, title, group, sub, status, score, created_at')
       .order('created_at', { ascending: false })
       .limit(300)
     if (status === 'pending') {
