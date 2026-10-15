@@ -104,8 +104,8 @@ export function SubmissionViewer({ content }: Props) {
     )
   }
 
-  // 片段练习 / 会谈：含督导反馈或对话
-  if (isString(c.feedback)) {
+  // 片段练习 / 会谈：仅概要 + 对话记录（督导反馈仅学生可见，教师端不显示）
+  if (isString(c.summary) || Array.isArray(c.messages)) {
     return (
       <View className="flex flex-col gap-3">
         {isString(c.summary) && (
@@ -118,17 +118,11 @@ export function SubmissionViewer({ content }: Props) {
         {Array.isArray(c.messages) && (
           <Card>
             <CardContent className="p-4">
-              <Text className="block text-base text-primary font-medium mb-2">对话记录</Text>
+              <Text className="block text-base text-primary font-medium mb-2">对话记录（含学生提问与咨询对话）</Text>
               <Messages messages={c.messages} />
             </CardContent>
           </Card>
         )}
-        <Card>
-          <CardContent className="p-4">
-            <Text className="block text-base text-primary font-medium mb-2">督导反馈</Text>
-            <Text className="block text-sm text-foreground leading-relaxed whitespace-pre-wrap">{c.feedback}</Text>
-          </CardContent>
-        </Card>
       </View>
     )
   }
