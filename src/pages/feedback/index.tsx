@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { View, Text, RichText } from '@tarojs/components'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
 import { Button } from '@/components/ui/button'
@@ -36,32 +36,56 @@ interface AskItem {
   a: string
 }
 
-/** 极简 Markdown -> 可被 RichText 使用的 HTML（仅覆盖督导模板用到的语法） */
-function mdToHtml(md: string): string {
-  const lines = md.replace(/\r/g, '').split('\n')
-  const out: string[] = []
-  for (let raw of lines) {
-    const line = raw.trim()
-    if (!line) continue
-    if (/^##\s+/.test(line)) {
-      out.push(`<h3 style="font-size:17px;font-weight:600;margin:14px 0 6px;color:#2F3430;">${inline(line.replace(/^##\s+/, ''))}</h3>`)
-    } else if (/^#\s+/.test(line)) {
-      out.push(`<h2 style="font-size:19px;font-weight:700;margin:12px 0 6px;color:#2F3430;">${inline(line.replace(/^#\s+/, ''))}</h2>`)
-    } else if (/^[-·*]\s+/.test(line)) {
-      out.push(`<p style="margin:4px 0;line-height:1.7;color:#3C423E;">· ${inline(line.replace(/^[-·*]\s+/, ''))}</p>`)
-    } else {
-      out.push(`<p style="margin:6px 0;line-height:1.7;color:#3C423E;">${inline(line)}</p>`)
-    }
+/** 行内片段：普通文本 / 加粗 / 行内代码 */
+interface RichPart { t: string; bold?: boolean; code?: boolean }
+interface RichBlock { type: 'h1' | 'h2' | 'h3' | 'li' | 'p' | 'code'; parts: RichPart[] }
+
+/** 极简 Markdown 行内解析（剥离标记，保留加粗与行内代码，纯文本安全渲染） */
+function parseParts(s: string): RichPart[] {
+  const parts: RichPart[] = []
+  const re = /(\*\*[^*]+?\*\*|`[^`]+`)/g
+  let last = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(s))) {
+    if (m.index > last) parts.push({ t: s.slice(last, m.index) })
+    const w = m[0]
+    if (w.startsWith('**')) parts.push({ t: w.slice(2, -2), bold: true })
+    else parts.push({ t: w.slice(1, -1), code: true })
+    last = m.index + w.length
   }
-  return out.join('')
+  if (last < s.length) parts.push({ t: s.slice(last) })
+  return parts.map(p => ({
+    ...p,
+    t: p.t.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[*#_>]/g, '').replace(/\s+/g, ' ').trim()
+  })).filter(p => p.t.length > 0 || p.bold || p.code)
 }
 
-function inline(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:600;">$1</strong>')
+/** 极简 Markdown -> 结构化纯文本块（彻底规避 RichText HTML 解析乱码） */
+function parseBlocks(md: string): RichBlock[] {
+  return md
+    .replace(/\r/g, '')
+    .split('\n')
+    .map(raw => raw.trim())
+    .filter(Boolean)
+    .map((line): RichBlock => {
+      if (/^#\s+/.test(line)) return { type: 'h1', parts: parseParts(line.replace(/^#\s+/, '')) }
+      if (/^##\s+/.test(line)) return { type: 'h2', parts: parseParts(line.replace(/^##\s+/, '')) }
+      if (/^###\s+/.test(line)) return { type: 'h3', parts: parseParts(line.replace(/^###\s+/, '')) }
+      if (/^```/.test(line)) return { type: 'code', parts: [] }
+      if (/^[-·*]\s+/.test(line)) return { type: 'li', parts: parseParts(line.replace(/^[-·*]\s+/, '')) }
+      if (/^>\s+/.test(line)) return { type: 'p', parts: parseParts(line.replace(/^>\s+/, '')) }
+      return { type: 'p', parts: parseParts(line) }
+    })
+}
+
+const BODY = { fontSize: 15, lineHeight: 1.75, color: '#3C423E' } as const
+const BLOCK_STYLE: Record<RichBlock['type'], CSSProperties> = {
+  h1: { fontSize: 19, fontWeight: 700, color: '#2F3430', marginTop: 10, marginBottom: 4 },
+  h2: { fontSize: 17, fontWeight: 600, color: '#2F3430', marginTop: 10, marginBottom: 4 },
+  h3: { fontSize: 15, fontWeight: 600, color: '#2F3430', marginTop: 8, marginBottom: 3 },
+  p: { ...BODY, marginBottom: 6 },
+  li: { ...BODY, marginBottom: 4, paddingLeft: 0 },
+  code: { fontFamily: 'monospace', fontSize: 13, lineHeight: 1.7, color: '#9A4A3C', backgroundColor: 'rgba(0,0,0,0.04)', borderRadius: 6, padding: 8, marginBottom: 6, whiteSpace: 'pre-wrap' } as CSSProperties
 }
 
 const FeedbackPage = () => {
@@ -273,9 +297,30 @@ const FeedbackPage = () => {
           </View>
         )}
 
-        {/* 文字反馈（Markdown） */}
+        {/* 文字反馈（纯文本结构化渲染，避免 HTML 乱码） */}
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3">
-          <RichText nodes={mdToHtml(data.feedback)} />
+          {parseBlocks(data.feedback || '').map((b, i) => (
+            <Text
+              key={i}
+              className="block w-full"
+              selectable
+              style={BLOCK_STYLE[b.type]}
+            >
+              {b.type === 'li' ? <Text style={{ fontWeight: 700, color: '#5B8C7B' }}>· </Text> : null}
+              {b.parts.map((p, j) => (
+                <Text
+                  key={j}
+                  style={{
+                    fontWeight: p.bold ? 600 : undefined,
+                    color: p.code ? '#9A4A3C' : undefined,
+                    fontFamily: p.code ? 'monospace' : undefined
+                  }}
+                >
+                  {p.t}
+                </Text>
+              ))}
+            </Text>
+          ))}
         </View>
 
         {/* 完整咨询：目标核对 + 下周作业 */}
