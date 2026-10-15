@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react'
 import Taro, { useDidShow } from '@tarojs/taro'
 import { View, Text, ScrollView } from '@tarojs/components'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { fetchTeacherList, deleteSubmission, SubmissionListItem, SubmissionType } from '@/services/homework'
@@ -76,6 +75,41 @@ export default function TeacherPage() {
     })
   }
 
+  const TYPE_ORDER: SubmissionType[] = ['fragment', 'conceptualization', 'session', 'mood']
+
+  const renderItemCard = (item: SubmissionListItem, isPendingTab: boolean) => (
+    <Card key={item.id} onClick={() => openGrade(item.id)}>
+      <CardContent className="p-4">
+        <View className="flex flex-row items-center justify-between">
+          <View className="flex-1 pr-2">
+            <View className="flex flex-row items-center gap-2 mb-2">
+              <Text className="block text-base font-medium text-foreground">{item.student_name}</Text>
+              {isPendingTab && (
+                <View className="w-2 h-2 rounded-full bg-destructive" />
+              )}
+            </View>
+            <Text className="block text-sm text-muted-foreground mb-2">{item.title}</Text>
+            <Text className="block text-xs text-muted-foreground">
+              {formatTime(item.created_at)}
+              {!isPendingTab ? ` · ${item.status === 'reviewed' ? '已查看' : '已批改'}` : ''}
+            </Text>
+          </View>
+          <View
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(192,101,79,0.1)' }}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDelete(item.id)
+            }}
+          >
+            <Trash2 size={16} color="#c0654f" />
+          </View>
+          <ChevronRight size={18} color="#9AA19A" />
+        </View>
+      </CardContent>
+    </Card>
+  )
+
   const renderList = (list: SubmissionListItem[], isPendingTab: boolean) => {
     if (loading) {
       return (
@@ -96,40 +130,23 @@ export default function TeacherPage() {
       )
     }
     return (
-      <ScrollView scrollY style={{ height: 'calc(100vh - 210px)' }} className="flex flex-col gap-3">
-        {list.map((item) => (
-          <Card key={item.id} onClick={() => openGrade(item.id)}>
-            <CardContent className="p-4">
-              <View className="flex flex-row items-center justify-between">
-                <View className="flex-1 pr-2">
-                  <View className="flex flex-row items-center gap-2 mb-2">
-                    <Badge variant="secondary">{TYPE_LABEL[item.type] || item.type}</Badge>
-                    <Text className="block text-base font-medium text-foreground">{item.student_name}</Text>
-                    {isPendingTab && (
-                      <View className="w-2 h-2 rounded-full bg-destructive" />
-                    )}
-                  </View>
-                  <Text className="block text-sm text-muted-foreground mb-2">{item.title}</Text>
-                  <Text className="block text-xs text-muted-foreground">
-                    {formatTime(item.created_at)}
-                    {!isPendingTab ? ` · ${item.status === 'reviewed' ? '已查看' : '已批改'}` : ''}
-                  </Text>
-                </View>
-                <View
-                  className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: 'rgba(192,101,79,0.1)' }}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDelete(item.id)
-                  }}
-                >
-                  <Trash2 size={16} color="#c0654f" />
-                </View>
-                <ChevronRight size={18} color="#9AA19A" />
+      <ScrollView scrollY style={{ height: 'calc(100vh - 220px)' }} className="flex flex-col">
+        {TYPE_ORDER.map((t) => {
+          const group = list.filter(i => i.type === t)
+          if (group.length === 0) return null
+          return (
+            <View key={t} className="mb-4">
+              <View className="flex flex-row items-center gap-2 mb-2 px-1">
+                <View className="w-1 h-4 rounded-full bg-primary" />
+                <Text className="block text-base font-semibold text-foreground">{TYPE_LABEL[t]}</Text>
+                <Text className="block text-sm text-muted-foreground">{group.length}</Text>
               </View>
-            </CardContent>
-          </Card>
-        ))}
+              <View className="flex flex-col gap-3">
+                {group.map(item => renderItemCard(item, isPendingTab))}
+              </View>
+            </View>
+          )
+        })}
       </ScrollView>
     )
   }

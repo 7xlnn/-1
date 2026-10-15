@@ -39,7 +39,10 @@ interface SessionState {
   endLabel: string
   /** 已生成、等待反馈页展示的督导反馈（避免超长 URL 参数） */
   pendingFeedback: unknown
+  /** 概念化练习中学生填写的横纵向概念化（供作业提交，不持久化） */
+  conceptForm: Record<string, string> | null
   setPendingFeedback: (d: unknown) => void
+  setConceptForm: (f: Record<string, string> | null) => void
   startSession: (p: {
     profile: ClientProfile
     fragmentId?: string | null
@@ -92,7 +95,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   endUrl: '',
   endLabel: '',
   pendingFeedback: null,
+  conceptForm: null,
   setPendingFeedback: d => set({ pendingFeedback: d }),
+  setConceptForm: f => set({ conceptForm: f }),
   startSession: p => {
     const key = storageKey(p.caseId ?? null, p.sessionIndex ?? 1, p.fragmentId ?? null)
     let messages: ChatMsg[] = []

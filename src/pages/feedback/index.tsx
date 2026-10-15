@@ -65,7 +65,7 @@ function inline(s: string): string {
 }
 
 const FeedbackPage = () => {
-  const { profile, messages, fragmentId, caseId, sessionIndex, pendingFeedback, clearPersisted } = useSessionStore()
+  const { profile, messages, fragmentId, caseId, sessionIndex, pendingFeedback, clearPersisted, conceptForm } = useSessionStore()
   const [data, setData] = useState<FeedbackResult | null>(
     pendingFeedback as FeedbackResult | null
   )
@@ -79,6 +79,7 @@ const FeedbackPage = () => {
 
   const isFragment = !!fragmentId
   const ex = isFragment ? allExercises.find(e => e.id === fragmentId) : null
+  const isConcept = ex?.taskType === 'conceptualization'
   const currentCase = !isFragment ? cases.find(c => c.id === caseId) : null
   const session = currentCase?.sessions.find(s => s.index === sessionIndex)
   const title = ex?.title ?? session?.title ?? '本次练习'
@@ -200,15 +201,21 @@ const FeedbackPage = () => {
     setSubmitting(true)
     try {
       await submitAsStudent({
-        type: isFragment ? 'fragment' : 'session',
+        type: isConcept ? 'conceptualization' : isFragment ? 'fragment' : 'session',
         title,
-        content: {
-          summary: title,
-          messages,
-          feedback: data.feedback,
-          scores: data.scores,
-          sessionCheck: data.sessionCheck,
-        },
+        content: isConcept
+          ? {
+              summary: title,
+              messages,
+              conceptForm,
+            }
+          : {
+              summary: title,
+              messages,
+              feedback: data.feedback,
+              scores: data.scores,
+              sessionCheck: data.sessionCheck,
+            },
       })
       setSubmitted(true)
       Taro.showToast({ title: '已提交给老师', icon: 'success' })

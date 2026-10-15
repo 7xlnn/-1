@@ -42,9 +42,67 @@ function Messages({ messages }: { messages: unknown }) {
   )
 }
 
+// 横纵向概念化字段定义
+const HORIZONTAL_FIELDS: { key: string; label: string }[] = [
+  { key: 'situation', label: '情境' },
+  { key: 'thought', label: '自动思维' },
+  { key: 'emotion', label: '情绪' },
+  { key: 'behavior', label: '行为' },
+]
+const VERTICAL_FIELDS: { key: string; label: string }[] = [
+  { key: 'childhood', label: '童年经历' },
+  { key: 'coreBelief', label: '核心信念' },
+  { key: 'attitude', label: '态度' },
+  { key: 'rule', label: '规则' },
+  { key: 'assumption', label: '假设' },
+  { key: 'coping', label: '应对策略' },
+]
+
 export function SubmissionViewer({ content }: Props) {
   const c = content || {}
   const keys = Object.keys(c)
+
+  // 概念化：仅对话记录 + 学生填写的横纵向概念化（不显示督导反馈）
+  if (c.conceptForm && typeof c.conceptForm === 'object') {
+    const form = c.conceptForm as Record<string, string>
+    return (
+      <View className="flex flex-col gap-3">
+        {isString(c.summary) && (
+          <Card>
+            <CardContent className="p-4">
+              <Field label="练习概要" value={c.summary} />
+            </CardContent>
+          </Card>
+        )}
+        {Array.isArray(c.messages) && (
+          <Card>
+            <CardContent className="p-4">
+              <Text className="block text-base text-primary font-medium mb-2">对话记录</Text>
+              <Messages messages={c.messages} />
+            </CardContent>
+          </Card>
+        )}
+        <Card>
+          <CardContent className="p-4">
+            <Text className="block text-base text-primary font-medium">横向概念化</Text>
+            <Text className="block text-sm text-muted-foreground mb-2">当下的情境—想法—情绪—行为</Text>
+            {HORIZONTAL_FIELDS.map(f => (
+              <Field key={f.key} label={f.label} value={form[f.key] ?? ''} />
+            ))}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <Text className="block text-base text-primary font-medium">纵向概念化</Text>
+            <Text className="block text-sm text-muted-foreground mb-2">从童年经历到核心信念的深层结构</Text>
+            {VERTICAL_FIELDS.map(f => (
+              <Field key={f.key} label={f.label} value={form[f.key] ?? ''} />
+            ))}
+          </CardContent>
+        </Card>
+      </View>
+    )
+  }
 
   // 片段练习 / 会谈：含督导反馈或对话
   if (isString(c.feedback)) {

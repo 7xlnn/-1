@@ -29,7 +29,7 @@ const EMPTY: ConceptForm = {
 const ConceptualizationPage = () => {
   const router = useRouter()
   const ex = allExercises.find(e => e.id === router.params.id)
-  const { messages, setPendingFeedback } = useSessionStore()
+  const { messages, setPendingFeedback, setConceptForm } = useSessionStore()
   const [form, setForm] = useState<ConceptForm>(EMPTY)
   const [submitting, setSubmitting] = useState(false)
 
@@ -62,6 +62,7 @@ const ConceptualizationPage = () => {
         }
       })
       console.log('[CBT feedback response]', res.data)
+      setConceptForm({ ...form })
       setPendingFeedback(res.data)
       Taro.redirectTo({ url: `/pages/feedback/index?id=${ex.id}` })
     } catch (e) {
