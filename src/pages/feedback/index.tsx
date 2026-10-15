@@ -78,11 +78,11 @@ function parseBlocks(md: string): RichBlock[] {
     })
 }
 
-const BODY = { fontSize: 15, lineHeight: 1.75, color: '#3C423E' } as const
+const BODY = { fontSize: 13, lineHeight: 1.7, color: '#3C423E' } as const
 const BLOCK_STYLE: Record<RichBlock['type'], CSSProperties> = {
-  h1: { fontSize: 19, fontWeight: 700, color: '#2F3430', marginTop: 10, marginBottom: 4 },
-  h2: { fontSize: 17, fontWeight: 600, color: '#2F3430', marginTop: 10, marginBottom: 4 },
-  h3: { fontSize: 15, fontWeight: 600, color: '#2F3430', marginTop: 8, marginBottom: 3 },
+  h1: { fontSize: 16, fontWeight: 700, color: '#2F3430', marginTop: 10, marginBottom: 4 },
+  h2: { fontSize: 14, fontWeight: 600, color: '#2F3430', marginTop: 10, marginBottom: 4 },
+  h3: { fontSize: 14, fontWeight: 600, color: '#2F3430', marginTop: 8, marginBottom: 3 },
   p: { ...BODY, marginBottom: 6 },
   li: { ...BODY, marginBottom: 4, paddingLeft: 0 },
   code: { fontFamily: 'monospace', fontSize: 13, lineHeight: 1.7, color: '#9A4A3C', backgroundColor: 'rgba(0,0,0,0.04)', borderRadius: 6, padding: 8, marginBottom: 6, whiteSpace: 'pre-wrap' } as CSSProperties
