@@ -234,10 +234,12 @@ const FeedbackPage = () => {
               summary: title,
               messages,
               conceptForm,
+              asks: asks.length ? asks : undefined,
             }
           : {
               summary: title,
               messages,
+              asks: asks.length ? asks : undefined,
               feedback: data.feedback,
               scores: data.scores,
               sessionCheck: data.sessionCheck,

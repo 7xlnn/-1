@@ -42,6 +42,34 @@ function Messages({ messages }: { messages: unknown }) {
   )
 }
 
+// 学生向督导的提问
+function Asks({ asks }: { asks: unknown }) {
+  if (!Array.isArray(asks) || asks.length === 0) return null
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <Text className="block text-base text-primary font-medium mb-1">学生向督导的提问（{asks.length}）</Text>
+        <Text className="block text-sm text-muted-foreground mb-2">练习后学生主动提出的疑问与督导解答</Text>
+        {asks.map((item, i) => {
+          const q = (item as { q?: string })?.q || ''
+          const a = (item as { a?: string })?.a || ''
+          return (
+            <View key={i} className="mb-3 last:mb-0">
+              <View className="flex-row items-start mb-1">
+                <Badge className="mr-2 mt-1" style={{ backgroundColor: 'rgba(196,93,74,0.12)' }}>
+                  <Text className="text-xs" style={{ color: '#C45D4A' }}>问 {i + 1}</Text>
+                </Badge>
+                <Text className="flex-1 block text-sm text-foreground font-medium leading-relaxed">{q}</Text>
+              </View>
+              <Text className="block text-sm text-muted-foreground leading-relaxed ml-1 whitespace-pre-wrap">督导：{a}</Text>
+            </View>
+          )
+        })}
+      </CardContent>
+    </Card>
+  )
+}
+
 // 横纵向概念化字段定义
 const HORIZONTAL_FIELDS: { key: string; label: string }[] = [
   { key: 'situation', label: '情境' },
@@ -100,6 +128,7 @@ export function SubmissionViewer({ content }: Props) {
             ))}
           </CardContent>
         </Card>
+        <Asks asks={c.asks} />
       </View>
     )
   }
@@ -123,6 +152,7 @@ export function SubmissionViewer({ content }: Props) {
             </CardContent>
           </Card>
         )}
+        <Asks asks={c.asks} />
       </View>
     )
   }
