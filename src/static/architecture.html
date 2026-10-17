@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>CBT 练心场 · 产品架构示意图</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    background: #F7F4EE;
+    color: #2C3A33;
+    padding: 40px 48px;
+    min-width: 1280px;
+  }
+  .title { text-align:center; margin-bottom: 32px; }
+  .title h1 { font-size: 32px; color:#2C3A33; letter-spacing:2px; font-weight:700; }
+  .title p { font-size:15px; color:#6B7A70; margin-top:8px; letter-spacing:1px; }
+
+  .grid { display:grid; grid-template-columns: 1fr 90px 1fr; gap: 24px; align-items: stretch; }
+  .col { background:#fff; border-radius:18px; padding:22px 22px 18px; box-shadow:0 4px 20px rgba(63,91,76,0.08); border:1px solid rgba(63,91,76,0.12); }
+  .col.mid { background:transparent; box-shadow:none; border:0; padding:0; display:flex; align-items:center; justify-content:center; }
+
+  .col-title {
+    display:flex; align-items:center; gap:10px; margin-bottom:16px;
+    padding-bottom:12px; border-bottom:2px solid #E9E4D8;
+  }
+  .col-title .badge { width:36px; height:36px; border-radius:10px; background:#3F5B4C; color:#F7F4EE; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; }
+  .col-title h2 { font-size:18px; color:#3F5B4C; }
+  .col-title .sub { font-size:12px; color:#8A9590; margin-left:6px; }
+
+  .module { border:1px solid #E9E4D8; border-radius:12px; padding:12px 14px; margin-bottom:10px; background:#FBFAF6; }
+  .module.head-student { border-left:5px solid #3F5B4C; }
+  .module.head-teacher { border-left:5px solid #B5584A; }
+  .module.ai { border-left:5px solid #C99A4E; background:linear-gradient(90deg,#FDF9EE,#FBFAF6 60%); }
+  .module.data { border-left:5px solid #6B8E84; }
+  .module.cross { border-left:5px solid #8A7A6A; }
+  .module h3 { font-size:14px; font-weight:700; color:#2C3A33; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .module h3 .tag { font-size:10px; padding:1px 7px; border-radius:10px; background:#EDE7D6; color:#8A7A6A; font-weight:500; }
+  .module p, .module li { font-size:12px; color:#5B6A61; line-height:1.75; }
+  .module ul { padding-left:14px; margin-top:4px; }
+
+  .arrow { width:64px; height:64px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; color:#3F5B4C; box-shadow:0 4px 16px rgba(63,91,76,0.15); }
+  .arrow-row { display:flex; flex-direction:column; gap:16px; }
+  .arrow-label { font-size:11px; color:#6B7A70; text-align:center; margin-top:6px; }
+  .arrow-box { display:flex; flex-direction:column; align-items:center; }
+
+  .bottom-flow { margin-top:28px; background:#fff; border-radius:18px; padding:20px 26px; box-shadow:0 4px 20px rgba(63,91,76,0.08); border:1px solid rgba(63,91,76,0.12); }
+  .bottom-flow h2 { font-size:16px; color:#3F5B4C; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .flow { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+  .flow-step { flex:1; text-align:center; padding:14px 8px; border-radius:12px; background:#FBFAF6; border:1px solid #E9E4D8; position:relative; }
+  .flow-step .num { display:inline-block; width:22px; height:22px; line-height:22px; border-radius:50%; background:#3F5B4C; color:#F7F4EE; font-size:11px; font-weight:700; margin-bottom:6px; }
+  .flow-step h4 { font-size:13px; color:#2C3A33; margin-bottom:4px; }
+  .flow-step p { font-size:11px; color:#6B7A70; line-height:1.6; }
+  .flow-arrow { color:#C99A4E; font-size:20px; font-weight:700; flex-shrink:0; }
+
+  .pill-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .pill { font-size:11px; padding:3px 10px; border-radius:20px; background:#EDE7D6; color:#6B6455; }
+  .pill.green { background:#DDE5DE; color:#3F5B4C; }
+  .pill.red { background:#EED9D3; color:#8C4438; }
+  .pill.gold { background:#F3E8CF; color:#8A6B32; }
+
+  .legend { display:flex; gap:18px; justify-content:center; margin-top:18px; font-size:12px; color:#6B7A70; }
+  .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:middle; }
+  .legend .l-student::before { background:#3F5B4C; }
+  .legend .l-teacher::before { background:#B5584A; }
+  .legend .l-ai::before { background:#C99A4E; }
+  .legend .l-data::before { background:#6B8E84; }
+  .legend .l-cross::before { background:#8A7A6A; }
+</style>
+</head>
+<body>
+  <div class="title">
+    <h1>CBT 练心场 · 产品架构示意图</h1>
+    <p>新手心理咨询师的 AI 实战陪练小程序 · 三层训练 + 双角色教学闭环</p>
+  </div>
+
+  <div class="grid">
+    <!-- 学生端 -->
+    <div class="col">
+      <div class="col-title">
+        <div class="badge" style="background:#3F5B4C">学</div>
+        <h2>学生端 <span class="sub">（学习者主视角）</span></h2>
+      </div>
+      <div class="module head-student">
+        <h3>🎯 片段练习 <span class="tag">微技能</span></h3>
+        <p>5 大类 7 个场景：基本技术（共情/无条件积极关注/真诚一致）、认知概念化、自动思维、中间信念、核心信念</p>
+      </div>
+      <div class="module head-student">
+        <h3>💬 完整咨询 <span class="tag">全流程</span></h3>
+        <p>4 个个案 × 6 次结构化会谈：林女士抑郁、赵先生社交焦虑、郑女士惊恐、何女士关系自尊</p>
+        <div class="pill-row">
+          <span class="pill green">目标核对卡</span>
+          <span class="pill green">下周作业</span>
+          <span class="pill green">AI来访者情绪记录</span>
+        </div>
+      </div>
+      <div class="module head-student">
+        <h3>📓 我的周记 <span class="tag">自我觉察</span></h3>
+        <p>贝克 DTR 七步：情境→思维→情绪→歪曲→引导问题→反应→结果；整周提交</p>
+      </div>
+      <div class="module cross">
+        <h3>📈 学习进度看板</h3>
+        <p>练习次数 / 六维评分趋势 / 完成度 / 薄弱维度</p>
+      </div>
+      <div class="module cross">
+        <h3>📤 提交作业 · 我的作业</h3>
+        <p>一键提交片段/概念化/会谈/周记；查看状态（待处理·已批改·已查看）与教师评语</p>
+      </div>
+    </div>
+
+    <!-- 中间 AI 引擎 + 数据 -->
+    <div class="col mid">
+      <div class="arrow-row">
+        <div class="arrow-box">
+          <div class="arrow">↔</div>
+          <div class="arrow-label">对话<br>练习</div>
+        </div>
+        <div class="arrow-box">
+          <div class="arrow">⇅</div>
+          <div class="arrow-label">反馈<br>追问</div>
+        </div>
+        <div class="arrow-box">
+          <div class="arrow" style="background:#B5584A;color:#fff;">↔</div>
+          <div class="arrow-label">作业<br>查看</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右列：AI + 数据 + 教师 -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <!-- AI 引擎 -->
+      <div class="col" style="padding:18px 20px 14px;">
+        <div class="col-title" style="margin-bottom:10px;">
+          <div class="badge" style="background:#C99A4E">AI</div>
+          <h2>双 Agent 智能引擎 <span class="sub">（大语言模型）</span></h2>
+        </div>
+        <div class="module ai">
+          <h3>🧑‍💼 AI 智能来访者</h3>
+          <p>完整人设（成长史/症状/关系）、阶段一致性、情绪与防御机制（回避·羞耻·挑衅·阻抗）</p>
+        </div>
+        <div class="module ai">
+          <h3>👨‍🏫 AI 督导师</h3>
+          <p>六维评分（倾听·共情·提问·CBT技术·关系·结构化）+ 亮点/改进/要点 + 多轮追问</p>
+        </div>
+      </div>
+
+      <!-- 数据 -->
+      <div class="col" style="padding:18px 20px 14px;">
+        <div class="col-title" style="margin-bottom:10px;">
+          <div class="badge" style="background:#6B8E84">☁</div>
+          <h2>数据与存储 <span class="sub">（云端+本地）</span></h2>
+        </div>
+        <div class="module data">
+          <h3>🗄 云端作业库（PostgreSQL）</h3>
+          <p>按学生·类型·主题·阶段归档；支持评分、评语、已查看标记</p>
+        </div>
+        <div class="module data">
+          <h3>🔒 本地隐私存储</h3>
+          <p>未提交周记本地加密保存；周记教师只查看不评分</p>
+        </div>
+      </div>
+
+      <!-- 教师端 -->
+      <div class="col" style="padding:18px 20px 14px;">
+        <div class="col-title" style="margin-bottom:10px;">
+          <div class="badge" style="background:#B5584A">师</div>
+          <h2>教师端 <span class="sub">（口令隐藏入口）</span></h2>
+        </div>
+        <div class="module head-teacher">
+          <h3>📂 三级归档工作台</h3>
+          <p>类型 → 主题/个案 → 会谈阶段（如：完整咨询 → 林女士抑郁 → 评估与建立关系）</p>
+        </div>
+        <div class="module head-teacher">
+          <h3>👀 查看完整过程 <span class="tag">伦理分层</span></h3>
+          <ul>
+            <li>✉ 完整对话 + 学生每一次提问</li>
+            <li>❓ 学生向督导追问的问答</li>
+            <li>📝 横/纵向概念化表单</li>
+            <li>📅 整周情绪记录</li>
+            <li>🚫 不显示 AI 督导给学生的反馈</li>
+          </ul>
+        </div>
+        <div class="module head-teacher">
+          <h3>✅ 差异化评价</h3>
+          <p>技能/个案 → 打分 + 评语；情绪周记 → 仅"标记已查看"（不评分）</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部用户流程 -->
+  <div class="bottom-flow">
+    <h2>🔄 核心用户流程：从练习到被看见</h2>
+    <div class="flow">
+      <div class="flow-step"><div class="num">1</div><h4>选主题</h4><p>片段/个案/周记<br>设目标与难度</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">2</div><h4>与AI来访者对话</h4><p>真实回应含防御<br>按建议轮次练习</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">3</div><h4>秒级督导反馈</h4><p>六维评分+改进<br>支持多轮追问</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">4</div><h4>提交给老师</h4><p>云端三级归档<br>本地隐私保护</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">5</div><h4>教师查看/批改</h4><p>看对话与提问<br>技能打分/周记标记</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="num">6</div><h4>回看评语·再练</h4><p>查看批改结果<br>数据驱动进步</p></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="l-student">学生端模块</span>
+    <span class="l-ai">AI 智能引擎</span>
+    <span class="l-data">数据存储</span>
+    <span class="l-teacher">教师端模块</span>
+    <span class="l-cross">跨端支撑模块</span>
+  </div>
+</body>
+</html>
