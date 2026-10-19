@@ -21,7 +21,7 @@ export default defineAppConfig({
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#F7F6F2',
-    navigationBarTitleText: 'CBT 练心场',
+    navigationBarTitleText: '知愈心理',
     navigationBarTextStyle: 'black',
     backgroundColor: '#F7F6F2'
   },

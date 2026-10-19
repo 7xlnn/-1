@@ -1,7 +1,7 @@
 {
   "miniprogramRoot": "./dist",
-  "projectname": "coze-mini-program",
-  "description": "test",
+  "projectname": "知愈心理",
+  "description": "知愈心理——CBT实务训练小程序",
   "appid": "touristappid",
   "setting": {
     "urlCheck": true,

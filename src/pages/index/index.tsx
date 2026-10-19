@@ -13,7 +13,7 @@ const IndexPage = () => {
         <View className="flex flex-row items-center justify-between">
           <View className="flex flex-row items-center gap-2">
             <Leaf size={20} color="#ffffff" />
-            <Text className="text-white text-lg font-bold">CBT 练心场</Text>
+            <Text className="text-white text-lg font-bold">知愈心理</Text>
           </View>
           <View
             className="w-9 h-9 rounded-full flex items-center justify-center"
