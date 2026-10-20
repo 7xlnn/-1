@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { Layers, ChevronRight, Leaf, Sparkles, ChartBar, ClipboardCheck, Settings } from 'lucide-react-taro'
+import { Layers, ChevronRight, Leaf, ChartBar, ClipboardCheck, Settings } from 'lucide-react-taro'
 import { fragmentGroups } from '@/data/fragments'
 import { useIdentity } from '@/store/identity'
 
@@ -104,14 +104,6 @@ const IndexPage = () => {
             <ChevronRight size={16} color="#9AA19A" />
           </View>
         )}
-
-        {/* 理念卡 */}
-        <View className="mt-4 rounded-2xl p-4 flex flex-row items-start gap-3" style={{ backgroundColor: 'rgba(239,236,228,0.7)' }}>
-          <Sparkles size={16} color="#5B8C7B" />
-          <Text className="block flex-1 text-lg leading-relaxed text-muted-foreground">
-            每个练习都有 AI 扮演的来访者与你对话，结束后由“督导”依据 CBT 专业标准给出反馈。建议按基本技术 → 概念化 → 自动思维 → 信念工作的顺序练习。
-          </Text>
-        </View>
 
         <View className="h-8" />
       </View>
