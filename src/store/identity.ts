@@ -22,12 +22,14 @@ function genId() {
 function load(): { role: Role; studentName: string; teacherName: string; studentId: string } {
   try {
     const raw = Taro.getStorageSync(KEY)
-    if (raw && typeof raw === 'object') {
-      const studentId = raw.studentId || genId()
+    // 兼容多端 storage 存储格式：可能直接展开，也可能包裹在 { data: {...} } 内
+    const obj = raw && typeof raw === 'object' && 'data' in raw ? (raw as any).data : raw
+    if (obj && typeof obj === 'object') {
+      const studentId = obj.studentId || genId()
       return {
-        role: raw.role === 'teacher' ? 'teacher' : 'student',
-        studentName: raw.studentName || '',
-        teacherName: raw.teacherName || '老师',
+        role: obj.role === 'teacher' ? 'teacher' : 'student',
+        studentName: obj.studentName || '',
+        teacherName: obj.teacherName || '老师',
         studentId,
       }
     }
@@ -41,7 +43,8 @@ const initial = load()
 
 function persist(partial: Partial<IdentityState>) {
   try {
-    const cur = (Taro.getStorageSync(KEY) || {}) as Record<string, unknown>
+    const cur0 = Taro.getStorageSync(KEY) || {}
+    const cur = (cur0 && typeof cur0 === 'object' && 'data' in cur0 ? (cur0 as any).data : cur0) || {}
     Taro.setStorageSync(KEY, { ...cur, ...partial })
   } catch (e) {
     // ignore

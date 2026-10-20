@@ -33,7 +33,7 @@ export default function TeacherPage() {
     try {
       const [p, g] = await Promise.all([
         fetchTeacherList('pending'),
-        fetchTeacherList('processed'),
+        fetchTeacherList('graded'),
       ])
       setPending(p)
       setGraded(g)
