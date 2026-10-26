@@ -1,7 +1,8 @@
-import { View, Text } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { Layers, ChevronRight, Leaf, ChartBar, ClipboardCheck, Settings } from 'lucide-react-taro'
+import { Layers, ChevronRight, ChartBar, ClipboardCheck, Settings } from 'lucide-react-taro'
 import { fragmentGroups } from '@/data/fragments'
+import logo from '@/assets/logo.png'
 import { useIdentity } from '@/store/identity'
 
 const IndexPage = () => {
@@ -12,7 +13,7 @@ const IndexPage = () => {
       <View className="bg-primary px-5 pt-12 pb-10 rounded-b-3xl">
         <View className="flex flex-row items-center justify-between">
           <View className="flex flex-row items-center gap-2">
-            <Leaf size={20} color="#ffffff" />
+            <Image src={logo} className="w-9 h-9" mode="aspectFit" />
             <Text className="text-white text-lg font-bold">知愈心理</Text>
           </View>
           <View
