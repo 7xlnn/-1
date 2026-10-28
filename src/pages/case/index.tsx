@@ -84,8 +84,10 @@ const CasePage = () => {
                       </Text>
                     </View>
                   </View>
-                  <Text className="block text-lg text-muted-foreground mt-1 truncate whitespace-nowrap">
-                    {c.client.age}岁 · {c.client.tags.join(' · ')} · {practiceTagsOf(c)}
+                  <Text className="block text-lg text-muted-foreground mt-1 leading-snug">
+                    {c.client.age}岁 · {c.client.tags.join(' · ')}
+                    {'\n'}
+                    {practiceTagsOf(c)}
                   </Text>
                 </View>
                 <ChevronRight size={16} color="#9AA19A" />
