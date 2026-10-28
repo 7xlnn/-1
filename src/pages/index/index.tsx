@@ -14,12 +14,12 @@ const IndexPage = () => {
       <View className="relative overflow-hidden">
         <Image
           src={UI_ASSETS.homeHero}
-          className="w-full h-64"
+          className="w-full h-48"
           mode="aspectFill"
         />
         {/* 柔光遮罩：让文字在图中清晰可读 */}
         <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(33,49,42,0.28) 0%, rgba(31,61,45,0.72) 100%)' }} />
-        <View className="absolute inset-x-0 top-0 px-5 pt-10">
+        <View className="absolute inset-x-0 top-0 px-5 pt-8">
           <View className="flex flex-row items-center justify-between">
             <View className="flex flex-row items-center gap-2">
               <Image src={logo} className="w-9 h-9" mode="aspectFit" />
