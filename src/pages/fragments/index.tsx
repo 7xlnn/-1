@@ -28,7 +28,7 @@ const FragmentsPage = () => {
         </View>
       </View>
 
-      <View className="px-4 -mt-3">
+      <View className="px-4 mt-2">
         {list.map(ex => (
           <View
             key={ex.id}
