@@ -1,6 +1,7 @@
 import { View, Text, Image } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { ChevronRight, UserRound, FileText, Briefcase } from 'lucide-react-taro'
+import { ChevronRight, ChevronDown, UserRound, FileText, Briefcase } from 'lucide-react-taro'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cases } from '@/data/cases'
 import { UI_ASSETS } from '@/data/ui-assets'
 
@@ -56,8 +57,15 @@ const CaseDetailPage = () => {
             <Text className="block text-lg text-foreground leading-relaxed mt-1">{c.client.chiefComplaint}</Text>
           </View>
           <View className="mt-3">
-            <Text className="block text-base font-medium text-primary">背景</Text>
-            <Text className="block text-lg text-foreground leading-relaxed mt-1">{c.client.background}</Text>
+            <Collapsible>
+              <CollapsibleTrigger className="w-full flex flex-row items-center gap-1">
+                <Text className="block text-base font-medium text-primary">背景</Text>
+                <ChevronDown size={16} color="#5B8C7B" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <Text className="block text-lg text-foreground leading-relaxed mt-1">{c.client.background}</Text>
+              </CollapsibleContent>
+            </Collapsible>
           </View>
           {c.client.tags.length > 0 && (
             <View className="flex flex-row flex-wrap gap-2 mt-3">

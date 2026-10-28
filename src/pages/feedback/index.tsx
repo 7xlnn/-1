@@ -3,12 +3,13 @@ import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
 import { Button } from '@/components/ui/button'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
 import { allExercises } from '@/data/fragments'
 import { cases } from '@/data/cases'
 import { useSessionStore } from '@/store/session'
 import { useProgressStore } from '@/store/progress'
-import { CircleCheck, ChartNoAxesColumn, ClipboardList, House, ListChecks, Send } from 'lucide-react-taro'
+import { CircleCheck, ChartNoAxesColumn, ClipboardList, House, ListChecks, Send, ChevronDown } from 'lucide-react-taro'
 import { submitAsStudent, ensureStudentName } from '@/services/homework'
 
 /** 六维评分定义（与后端一致） */
@@ -299,30 +300,43 @@ const FeedbackPage = () => {
           </View>
         )}
 
-        {/* 文字反馈（纯文本结构化渲染，避免 HTML 乱码） */}
-        <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3">
-          {parseBlocks((data.feedback || '').replace(/<SESSCHECK>[\s\S]*?<\/SESSCHECK>/g, '')).map((b, i) => (
-            <Text
-              key={i}
-              className="block w-full"
-              selectable
-              style={BLOCK_STYLE[b.type]}
-            >
-              {b.type === 'li' ? <Text style={{ fontWeight: 700, color: '#5B8C7B' }}>· </Text> : null}
-              {b.parts.map((p, j) => (
-                <Text
-                  key={j}
-                  style={{
-                    fontWeight: p.bold ? 600 : undefined,
-                    color: p.code ? '#9A4A3C' : undefined,
-                    fontFamily: p.code ? 'monospace' : undefined
-                  }}
-                >
-                  {p.t}
-                </Text>
-              ))}
-            </Text>
-          ))}
+        {/* 文字反馈（默认折叠，点击展开完整点评） */}
+        <View className="bg-card rounded-2xl border border-border shadow-sm mt-3 overflow-hidden">
+          <Collapsible>
+            <CollapsibleTrigger className="w-full">
+              <View className="flex flex-row items-center gap-2 px-4 py-3" style={{ backgroundColor: 'rgba(91,140,123,0.10)' }}>
+                <ClipboardList size={16} color="#5B8C7B" />
+                <Text className="block flex-1 text-lg font-semibold text-foreground">完整督导点评</Text>
+                <ChevronDown size={18} color="#5B8C7B" />
+              </View>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <View className="p-4">
+                {parseBlocks((data.feedback || '').replace(/<SESSCHECK>[\s\S]*?<\/SESSCHECK>/g, '')).map((b, i) => (
+                  <Text
+                    key={i}
+                    className="block w-full"
+                    selectable
+                    style={BLOCK_STYLE[b.type]}
+                  >
+                    {b.type === 'li' ? <Text style={{ fontWeight: 700, color: '#5B8C7B' }}>· </Text> : null}
+                    {b.parts.map((p, j) => (
+                      <Text
+                        key={j}
+                        style={{
+                          fontWeight: p.bold ? 600 : undefined,
+                          color: p.code ? '#9A4A3C' : undefined,
+                          fontFamily: p.code ? 'monospace' : undefined
+                        }}
+                      >
+                        {p.t}
+                      </Text>
+                    ))}
+                  </Text>
+                ))}
+              </View>
+            </CollapsibleContent>
+          </Collapsible>
         </View>
 
         {/* 完整咨询：目标核对 + 下周作业 */}

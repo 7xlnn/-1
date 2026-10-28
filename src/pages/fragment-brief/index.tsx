@@ -1,6 +1,7 @@
 import { View, Text, Image } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { BookOpen, MessageCircle, Lightbulb, ListChecks, History } from 'lucide-react-taro'
+import { BookOpen, MessageCircle, Lightbulb, ListChecks, History, ChevronDown } from 'lucide-react-taro'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { allExercises } from '@/data/fragments'
 import { UI_ASSETS } from '@/data/ui-assets'
 import { Button } from '@/components/ui/button'
@@ -72,13 +73,18 @@ const FragmentBriefPage = () => {
           </View>
           <View className="mt-3 flex flex-col gap-3">
             {ex.points.map((p, i) => (
-              <View key={i}>
-                <Text className="block text-lg font-medium text-foreground">{p.title}</Text>
-                <Text className="block text-lg leading-relaxed text-muted-foreground mt-1">{p.desc}</Text>
-                {p.example && (
-                  <Text className="block text-sm text-primary mt-1 leading-relaxed">{p.example}</Text>
-                )}
-              </View>
+              <Collapsible key={i}>
+                <CollapsibleTrigger className="w-full flex flex-row items-center gap-1">
+                  <Text className="block flex-1 text-lg font-medium text-foreground">{p.title}</Text>
+                  <ChevronDown size={16} color="#5B8C7B" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <Text className="block text-lg leading-relaxed text-muted-foreground mt-1">{p.desc}</Text>
+                  {p.example && (
+                    <Text className="block text-base text-primary mt-1 leading-relaxed">{p.example}</Text>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
             ))}
           </View>
         </View>
@@ -99,7 +105,15 @@ const FragmentBriefPage = () => {
             <Text className="block text-lg leading-relaxed text-foreground">主诉：{ex.client.chiefComplaint}</Text>
           </View>
           <View className="mt-2 rounded-xl p-3" style={{ backgroundColor: 'rgba(91,140,123,0.05)' }}>
-            <Text className="block text-lg leading-relaxed text-foreground">背景：{ex.client.background}</Text>
+            <Collapsible>
+              <CollapsibleTrigger className="w-full flex flex-row items-center gap-1">
+                <Text className="block flex-1 text-lg leading-relaxed text-foreground">背景</Text>
+                <ChevronDown size={16} color="#5B8C7B" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <Text className="block text-lg leading-relaxed text-foreground mt-1">{ex.client.background}</Text>
+              </CollapsibleContent>
+            </Collapsible>
           </View>
         </View>
 

@@ -76,8 +76,8 @@ const ConceptualizationPage = () => {
   return (
     <View className="min-h-full bg-background pb-28">
       <View className="px-4 pt-4">
-        <Text className="block text-lg text-muted-foreground leading-relaxed">
-          请依据刚才的访谈内容，完成来访者的横向与纵向概念化。督导会把你的填写与对话证据一起点评。
+        <Text className="block text-base text-muted-foreground leading-relaxed">
+          依据刚才的访谈，完成横向与纵向概念化。
         </Text>
 
         {/* 横向概念化 */}
