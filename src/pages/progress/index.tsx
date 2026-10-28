@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
-import { View, Text } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Button } from '@/components/ui/button'
 import { categoryCounts, useProgressStore } from '@/store/progress'
 import { TrendingUp, ChartBar, Trophy, ArrowLeft } from 'lucide-react-taro'
+import { UI_ASSETS } from '@/data/ui-assets'
 
 const DIMENSIONS = [
   { key: 'empathy', label: '共情与关系' },
@@ -99,8 +100,11 @@ const ProgressPage = () => {
         </View>
 
         {records.length === 0 ? (
-          <View className="bg-card rounded-2xl border border-border p-6 mt-3 flex flex-col items-center">
-            <Text className="block text-lg text-muted-foreground">还没有练习记录</Text>
+          <View className="bg-card rounded-2xl border border-border p-6 mt-3 flex flex-col items-center overflow-hidden">
+            <View className="w-40 h-28 rounded-2xl overflow-hidden" style={{ boxShadow: '0 6px 18px rgba(91,140,123,0.18)' }}>
+              <Image src={UI_ASSETS.moodArt} mode="aspectFill" className="w-full h-full" />
+            </View>
+            <Text className="block text-lg font-medium text-foreground mt-4">还没有练习记录</Text>
             <Text className="block text-base text-muted-foreground mt-1">先去完成一次片段练习或会谈吧</Text>
             <Button className="mt-4 rounded-full" onClick={goBack}>
               <Text className="text-base text-primary-foreground">去练习</Text>

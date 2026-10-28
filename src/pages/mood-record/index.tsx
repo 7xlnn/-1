@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { View, Text } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { ClipboardList, RefreshCw, BookOpenCheck } from 'lucide-react-taro'
 import { cases } from '@/data/cases'
+import { UI_ASSETS } from '@/data/ui-assets'
 import { Network } from '@/network'
 import { ThoughtRecordCard } from '@/components/thought-record-card'
 import { Button } from '@/components/ui/button'
@@ -95,20 +96,24 @@ const MoodRecordPage = () => {
   return (
     <View className="min-h-full bg-background pb-10">
       {/* 头部 */}
-      <View className="bg-primary px-5 pt-10 pb-8 rounded-b-3xl">
-        <View className="flex flex-row items-center gap-2">
-          <ClipboardList size={18} color="#ffffff" />
-          <Text className="text-white text-lg font-bold">来访者情绪记录表</Text>
+      <View className="relative rounded-b-3xl overflow-hidden">
+        <Image src={UI_ASSETS.moodArt} mode="aspectFill" className="w-full h-40" />
+        <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.32) 0%, rgba(31,61,45,0.86) 100%)' }} />
+        <View className="absolute inset-0 flex flex-col justify-end px-5 py-4">
+          <View className="flex flex-row items-center gap-2">
+            <ClipboardList size={18} color="#ffffff" />
+            <Text className="text-white text-lg font-bold">来访者情绪记录表</Text>
+          </View>
+          <Text className="block mt-1 text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.92)' }}>
+            {c.client.name} · 第 {index}/{c.sessions.length} 次会谈前一周
+          </Text>
+          <Text className="block mt-1 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
+            这是来访者在会谈前自己记录的一周情绪与思维，可帮助你快速了解其近况与典型模式。
+          </Text>
         </View>
-        <Text className="block mt-2 text-lg leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>
-          {c.client.name} · 第 {index}/{c.sessions.length} 次会谈前一周
-        </Text>
-        <Text className="block mt-2 text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>
-          这是来访者在会谈前自己记录的一周情绪与思维，可帮助你快速了解其近况与典型模式。
-        </Text>
       </View>
 
-      <View className="px-4 -mt-4 pt-2">
+      <View className="px-4 mt-4 pb-10">
         {loading && (
           <View className="flex flex-col gap-3">
             <Skeleton className="h-40 w-full rounded-2xl" />

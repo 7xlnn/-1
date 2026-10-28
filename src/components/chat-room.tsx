@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react'
-import { View, Text, Input, ScrollView } from '@tarojs/components'
+import { View, Text, Input, ScrollView, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
 import { Button } from '@/components/ui/button'
 import { useSessionStore } from '@/store/session'
 import type { ChatMsg } from '@/store/session'
+import { UI_ASSETS } from '@/data/ui-assets'
 import { Send, Flag, Target, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react-taro'
 
 interface ChatRoomProps {
@@ -14,7 +15,7 @@ interface ChatRoomProps {
 }
 
 const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
-  const { profile, messages, addMessage, setMessages, agentFocus, clientState, sessionGoal } = useSessionStore()
+  const { profile, messages, addMessage, setMessages, agentFocus, clientState, sessionGoal, sessionTitle } = useSessionStore()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -106,6 +107,23 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
 
   return (
     <View className="flex flex-col h-full bg-background">
+      {/* 咨询室氛围头图横幅 */}
+      <View className="relative h-28 overflow-hidden" style={{ backgroundColor: '#5B8C7B' }}>
+        <Image src={UI_ASSETS.caseArt} mode="aspectFill" className="w-full h-full" />
+        <View className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(31,61,45,0.82) 0%, rgba(31,61,45,0.35) 55%, rgba(31,61,45,0.05) 100%)' }} />
+        <View className="absolute inset-0 flex flex-col justify-center px-5">
+          <Text className="block text-white text-xs font-medium tracking-wide">{sessionTitle || '知愈心理 · 咨询室'}</Text>
+          <View className="flex flex-row items-center gap-2 mt-1">
+            <View className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.22)' }}>
+              <Text className="text-white text-base font-semibold">{profile?.name.slice(0, 1) || '访'}</Text>
+            </View>
+            <Text className="block text-white text-base font-semibold">
+              咨询师 · 与 {profile?.name || '来访者'} 的对话
+            </Text>
+          </View>
+        </View>
+      </View>
+
       {/* 本阶段目标胶囊 */}
       {sessionGoal ? (
         <View className="px-4 pt-3">
@@ -130,34 +148,37 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
       <ScrollView id="msg-list" scrollY className="flex-1 px-4 py-4" scrollWithAnimation>
         <View className="flex flex-col gap-4 pb-4">
           {messages.length === 0 && (
-            <View className="py-10 text-center">
-              <Text className="block text-lg text-muted-foreground">
-                咨询开始，主动和来访者打个招呼吧
-              </Text>
+            <View className="py-8 px-4">
+              <View className="bg-card rounded-2xl border border-border p-5 flex flex-col items-center" style={{ boxShadow: '0 4px 16px rgba(91,140,123,0.08)' }}>
+                <Text className="block text-lg text-foreground font-medium">咨询开始</Text>
+                <Text className="block text-base text-muted-foreground mt-2 text-center leading-relaxed">
+                  主动和来访者打个招呼吧{'\n'}可以这样开启：……最近感觉怎么样？今天想从哪里聊起？
+                </Text>
+              </View>
             </View>
           )}
           {messages.map((m, i) =>
             m.role === 'assistant' ? (
               <View key={i} className="flex flex-row items-start gap-2">
-                <View className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                  <Text className="text-lg text-muted-foreground">{profile?.name.slice(0, 1)}</Text>
+                <View className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(91,140,123,0.14)' }}>
+                  <Text className="text-lg" style={{ color: '#3f6b5c' }}>{profile?.name.slice(0, 1)}</Text>
                 </View>
-                <View className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 max-w-[78%]">
+                <View className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3 max-w-[78%]" style={{ boxShadow: '0 1px 3px rgba(31,61,45,0.06)' }}>
                   <Text className="block text-lg leading-relaxed text-foreground">{m.content}</Text>
                 </View>
               </View>
             ) : (
               <View key={i} className="flex flex-row items-start justify-end gap-2">
-                <View className="bg-primary rounded-2xl rounded-tr-sm px-4 py-3 max-w-[78%]">
-                  <Text className="block text-lg leading-relaxed text-primary-foreground">{m.content}</Text>
+                <View className="rounded-2xl rounded-tr-sm px-4 py-3 max-w-[78%]" style={{ background: 'linear-gradient(135deg,#5B8C7B,#4a7a69)' }}>
+                  <Text className="block text-lg leading-relaxed text-white">{m.content}</Text>
                 </View>
               </View>
             )
           )}
           {loading && (
             <View className="flex flex-row items-center gap-2">
-              <View className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                <Text className="text-lg text-muted-foreground">{profile?.name.slice(0, 1)}</Text>
+              <View className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(91,140,123,0.14)' }}>
+                <Text className="text-lg" style={{ color: '#3f6b5c' }}>{profile?.name.slice(0, 1)}</Text>
               </View>
               <View className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
                 <Text className="text-base text-muted-foreground">来访者正在输入…</Text>

@@ -1,7 +1,8 @@
-import { View, Text } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { ChevronRight, UserRound, FileText, Briefcase } from 'lucide-react-taro'
 import { cases } from '@/data/cases'
+import { UI_ASSETS } from '@/data/ui-assets'
 
 const CaseDetailPage = () => {
   const router = useRouter()
@@ -17,20 +18,24 @@ const CaseDetailPage = () => {
 
   return (
     <View className="min-h-full bg-background">
-      <View className="bg-primary px-5 pt-10 pb-8 rounded-b-3xl">
-        <View className="flex flex-row items-center gap-2">
-          <UserRound size={18} color="#ffffff" />
-          <Text className="text-white text-lg font-bold">{c.title}</Text>
-        </View>
-        <Text className="block text-lg mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>
-          {c.theme} · {c.sessions.length} 次会谈 · {c.difficulty}
-        </Text>
-        <View className="mt-3 rounded-xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-          <Text className="block text-white leading-relaxed text-lg">{c.description}</Text>
+      <View className="relative rounded-b-3xl overflow-hidden">
+        <Image src={UI_ASSETS.caseArt} mode="aspectFill" className="w-full h-44" />
+        <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.30) 0%, rgba(31,61,45,0.85) 100%)' }} />
+        <View className="absolute inset-0 flex flex-col justify-end px-5 py-4">
+          <View className="flex flex-row items-center gap-2">
+            <UserRound size={18} color="#ffffff" />
+            <Text className="text-white text-lg font-bold">{c.title}</Text>
+          </View>
+          <Text className="block text-base mt-1 leading-relaxed" style={{ color: 'rgba(255,255,255,0.9)' }}>
+            {c.theme} · {c.sessions.length} 次会谈 · {c.difficulty}
+          </Text>
+          <View className="mt-2 rounded-xl p-3" style={{ backgroundColor: 'rgba(255,255,255,0.16)' }}>
+            <Text className="block text-white leading-relaxed text-base">{c.description}</Text>
+          </View>
         </View>
       </View>
 
-      <View className="px-4 -mt-4 pb-8">
+      <View className="px-4 mt-4 pb-8">
         {/* 来访者档案卡 */}
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mb-4">
           <View className="flex flex-row items-center gap-2 mb-1">

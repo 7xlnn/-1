@@ -1,7 +1,8 @@
-import { View, Text } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { BookOpen, MessageCircle, Lightbulb, ListChecks, History } from 'lucide-react-taro'
 import { allExercises } from '@/data/fragments'
+import { UI_ASSETS } from '@/data/ui-assets'
 import { Button } from '@/components/ui/button'
 import { useSessionStore, readPersisted, buildStorageKey } from '@/store/session'
 
@@ -43,7 +44,17 @@ const FragmentBriefPage = () => {
 
   return (
     <View className="min-h-full bg-background pb-28">
-      <View className="px-4 pt-4">
+      {/* 氛围头图 */}
+      <View className="relative h-32 overflow-hidden">
+        <Image src={UI_ASSETS.fragmentArt} mode="aspectFill" className="w-full h-full" />
+        <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.30) 0%, rgba(31,61,45,0.86) 100%)' }} />
+        <View className="absolute inset-0 flex flex-col justify-end px-5 py-4">
+          <Text className="block text-white text-sm font-medium tracking-wide">知愈心理 · 片段练习</Text>
+          <Text className="block text-white text-xl font-bold mt-1">{ex.title}</Text>
+        </View>
+      </View>
+
+      <View className="px-4 mt-4">
         {/* 任务说明 */}
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm">
           <View className="flex flex-row items-center gap-2">
