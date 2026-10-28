@@ -225,15 +225,15 @@ ${stateLines.length ? stateLines.join('\n') : ''}
 
     const userPrompt = `${sessionInfo}。
 来访者${c.name}的完整档案如下：
-- 主诉：${c.chiefComplaint}
-- 典型自动思维：${c.automaticThoughts.join('；')}
-- 情绪：${c.emotions.join('；')}
-- 行为/应对：${c.behaviors.join('；')}
-- 成长经历：${c.childhood}
-- 核心信念：${c.coreBeliefs.join('；')}
-- 态度：${c.attitudes.join('；')}
-- 规则：${c.rules.join('；')}
-- 假设：${c.assumptions.join('；')}
+- 主诉：${c.chiefComplaint ?? ''}
+- 典型自动思维：${(c.automaticThoughts ?? []).join('；')}
+- 情绪：${(c.emotions ?? []).join('；')}
+- 行为/应对：${(c.behaviors ?? []).join('；')}
+- 成长经历：${c.childhood ?? ''}
+- 核心信念：${(c.coreBeliefs ?? []).join('；')}
+- 态度：${(c.attitudes ?? []).join('；')}
+- 规则：${(c.rules ?? []).join('；')}
+- 假设：${(c.assumptions ?? []).join('；')}
 ${payload.sessionGoal ? `- 本次会谈目标：${payload.sessionGoal}` : ''}
 
 以下是完整对话记录：
