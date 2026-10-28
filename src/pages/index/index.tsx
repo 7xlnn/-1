@@ -55,7 +55,7 @@ const IndexPage = () => {
           className="relative rounded-2xl overflow-hidden shadow-sm mt-3"
           onClick={() => Taro.navigateTo({ url: `/pages/fragments/index?id=${fragmentGroups[0].id}` })}
         >
-          <Image src={UI_ASSETS.fragmentArt} className="w-full h-40" mode="aspectFill" />
+          <Image src={UI_ASSETS.fragmentArt} className="w-full h-56" mode="aspectFill" />
           <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.05) 0%, rgba(23,43,33,0.62) 100%)' }} />
           <View className="absolute inset-x-0 bottom-0 p-4">
             <View className="flex flex-row justify-between items-center">
@@ -80,7 +80,7 @@ const IndexPage = () => {
           className="relative rounded-2xl overflow-hidden shadow-sm mt-4"
           onClick={() => Taro.navigateTo({ url: '/pages/case/index' })}
         >
-          <Image src={UI_ASSETS.caseArt} className="w-full h-40" mode="aspectFill" />
+          <Image src={UI_ASSETS.caseArt} className="w-full h-56" mode="aspectFill" />
           <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.05) 0%, rgba(23,43,33,0.62) 100%)' }} />
           <View className="absolute inset-x-0 bottom-0 p-4">
             <View className="flex flex-row items-center gap-2">
