@@ -79,6 +79,38 @@ function parseBlocks(md: string): RichBlock[] {
     })
 }
 
+/** 反馈section：由标题 + 若干正文块构成 */
+interface FeedbackSection { heading: string; icon: typeof ClipboardList; iconColor: string; headBg: string; blocks: RichBlock[] }
+
+/** 按标题(h)把扁平块切成语义区块，供"做得好的/需要改进/专业示范/要点"分卡展示 */
+function groupSections(blocks: RichBlock[]): FeedbackSection[] {
+  const pick = (h: string): Omit<FeedbackSection, 'heading' | 'blocks'> => {
+    const t = h.replace(/[#*]/g, '')
+    if (/做得好的|做得对|亮点|值得肯定/.test(t)) return { icon: CircleCheck, iconColor: '#5B8C7B', headBg: 'rgba(91,140,123,0.14)' }
+    if (/需要改进|不足|待提升|可优化/.test(t)) return { icon: ChartNoAxesColumn, iconColor: '#C0654F', headBg: 'rgba(192,101,79,0.12)' }
+    if (/专业示范|示范|可以这样|标准回应|更优回应/.test(t)) return { icon: ClipboardList, iconColor: '#5B8C7B', headBg: 'rgba(91,140,123,0.10)' }
+    if (/本次要点|要点|总结|关键|下次记住/.test(t)) return { icon: ListChecks, iconColor: '#2F3430', headBg: 'rgba(0,0,0,0.05)' }
+    return { icon: ListChecks, iconColor: '#5B8C7B', headBg: 'rgba(91,140,123,0.10)' }
+  }
+  const out: FeedbackSection[] = []
+  let cur: FeedbackSection | null = null
+  for (const b of blocks) {
+    if (b.type === 'h1' || b.type === 'h2' || b.type === 'h3') {
+      if (cur) out.push(cur)
+      const heading = b.parts.map(p => p.t).join('') || '反馈'
+      cur = { heading, blocks: [], ...pick(heading) }
+    } else if (cur) {
+      cur.blocks.push(b)
+    } else {
+      // 标题前的导语直接放入占位section（无标题头样式用普通）——归入首个
+      if (!out.length) { cur = { heading: '', icon: ListChecks, iconColor: '#5B8C7B', headBg: 'rgba(91,140,123,0.10)', blocks: [] } }
+      cur!.blocks.push(b)
+    }
+  }
+  if (cur) out.push(cur)
+  return out.filter(s => s.blocks.length || s.heading)
+}
+
 const BODY = { fontSize: 13, lineHeight: 1.7, color: '#3C423E' } as const
 const BLOCK_STYLE: Record<RichBlock['type'], CSSProperties> = {
   h1: { fontSize: 16, fontWeight: 700, color: '#2F3430', marginTop: 10, marginBottom: 4 },
@@ -311,29 +343,44 @@ const FeedbackPage = () => {
               </View>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <View className="p-4">
-                {parseBlocks((data.feedback || '').replace(/<SESSCHECK>[\s\S]*?<\/SESSCHECK>/g, '')).map((b, i) => (
-                  <Text
-                    key={i}
-                    className="block w-full"
-                    selectable
-                    style={BLOCK_STYLE[b.type]}
-                  >
-                    {b.type === 'li' ? <Text style={{ fontWeight: 700, color: '#5B8C7B' }}>· </Text> : null}
-                    {b.parts.map((p, j) => (
-                      <Text
-                        key={j}
-                        style={{
-                          fontWeight: p.bold ? 600 : undefined,
-                          color: p.code ? '#9A4A3C' : undefined,
-                          fontFamily: p.code ? 'monospace' : undefined
-                        }}
-                      >
-                        {p.t}
-                      </Text>
-                    ))}
-                  </Text>
-                ))}
+              <View className="p-4 flex flex-col gap-3">
+                {groupSections(parseBlocks((data.feedback || '').replace(/<SESSCHECK>[\s\S]*?<\/SESSCHECK>/g, ''))).map((sec, si) => {
+                  const Icon = sec.icon
+                  return (
+                    <View key={si} className="rounded-xl border border-border overflow-hidden">
+                      {sec.heading ? (
+                        <View className="flex flex-row items-center gap-2 px-3 py-2" style={{ backgroundColor: sec.headBg }}>
+                          <Icon size={15} color={sec.iconColor} />
+                          <Text className="block flex-1 text-base font-semibold text-foreground">{sec.heading}</Text>
+                        </View>
+                      ) : null}
+                      <View className="px-3 py-2">
+                        {sec.blocks.map((b, i) => (
+                          <Text
+                            key={i}
+                            className="block w-full"
+                            selectable
+                            style={sec.heading ? { ...BLOCK_STYLE[b.type], marginTop: 0, marginBottom: i === sec.blocks.length - 1 ? 0 : 6 } : BLOCK_STYLE[b.type]}
+                          >
+                            {b.type === 'li' ? <Text style={{ fontWeight: 700, color: '#5B8C7B' }}>· </Text> : null}
+                            {b.parts.map((p, j) => (
+                              <Text
+                                key={j}
+                                style={{
+                                  fontWeight: p.bold ? 600 : undefined,
+                                  color: p.code ? '#9A4A3C' : undefined,
+                                  fontFamily: p.code ? 'monospace' : undefined
+                                }}
+                              >
+                                {p.t}
+                              </Text>
+                            ))}
+                          </Text>
+                        ))}
+                      </View>
+                    </View>
+                  )
+                })}
               </View>
             </CollapsibleContent>
           </Collapsible>
