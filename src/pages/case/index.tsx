@@ -8,6 +8,14 @@ import { UI_ASSETS } from '@/data/ui-assets'
 type Filter = '全部' | '入门' | '进阶'
 const FILTERS: Filter[] = ['全部', '入门', '进阶']
 
+const practiceTagsOf = (c: (typeof cases)[number]) => {
+  const set = new Set<string>()
+  c.sessions.forEach((s) => {
+    s.skills.slice(0, 2).forEach((k) => set.add(k))
+  })
+  return [...set].slice(0, 2).join(' · ')
+}
+
 const CasePage = () => {
   const [filter, setFilter] = useState<Filter>('全部')
   const shownCases = filter === '全部' ? cases : cases.filter(c => c.difficulty === filter)
@@ -77,7 +85,7 @@ const CasePage = () => {
                     </View>
                   </View>
                   <Text className="block text-lg text-muted-foreground mt-1 truncate whitespace-nowrap">
-                    {c.client.age}岁 · {c.sessions.length} 次会谈
+                    {c.client.age}岁 · {c.client.tags.join(' · ')} · {practiceTagsOf(c)}
                   </Text>
                 </View>
                 <ChevronRight size={16} color="#9AA19A" />
