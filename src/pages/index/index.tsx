@@ -14,7 +14,7 @@ const IndexPage = () => {
       <View className="relative overflow-hidden">
         <Image
           src={UI_ASSETS.homeHero}
-          className="w-full h-48"
+          className="w-full h-52"
           mode="aspectFill"
         />
         {/* 柔光遮罩：让文字在图中清晰可读 */}
@@ -23,7 +23,7 @@ const IndexPage = () => {
           <View className="flex flex-row items-center justify-between">
             <View className="flex flex-row items-center gap-2">
               <Image src={logo} className="w-9 h-9" mode="aspectFit" />
-              <Text className="text-white text-lg font-bold tracking-wide">知愈心理</Text>
+              <Text className="text-white text-xl font-bold tracking-wide">知愈心理</Text>
             </View>
             <View
               className="w-9 h-9 rounded-full flex items-center justify-center"
@@ -49,7 +49,7 @@ const IndexPage = () => {
         </View>
       </View>
 
-      <View className="px-4 -mt-2">
+      <View className="px-4">
         {/* ================= 片段练习 大图卡 ================= */}
         <View
           className="relative rounded-2xl overflow-hidden shadow-sm"

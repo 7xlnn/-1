@@ -249,7 +249,7 @@ const MyMoodPage = () => {
         <View className="absolute inset-x-0 bottom-0 px-5 pb-5">
           <View className="flex flex-row items-center gap-2">
             <HeartPulse size={18} color="#ffffff" />
-            <Text className="text-white text-lg font-bold">我的情绪周记</Text>
+            <Text className="text-white text-xl font-bold">我的情绪周记</Text>
           </View>
           <Text className="block mt-2 text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.9)' }}>
             用咨询师的 DTR 记录表观察自己。{'\n'}先照顾好自己，才能照顾好来访者。
