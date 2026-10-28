@@ -52,7 +52,7 @@ const IndexPage = () => {
       <View className="px-4">
         {/* ================= 片段练习 大图卡 ================= */}
         <View
-          className="relative rounded-2xl overflow-hidden shadow-sm"
+          className="relative rounded-2xl overflow-hidden shadow-sm mt-3"
           onClick={() => Taro.navigateTo({ url: `/pages/fragments/index?id=${fragmentGroups[0].id}` })}
         >
           <Image src={UI_ASSETS.fragmentArt} className="w-full h-40" mode="aspectFill" />
