@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
+import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { HeartPulse, Plus, X, Check, Trash2, PencilLine, Send, CircleCheck } from 'lucide-react-taro'
+import { UI_ASSETS } from '@/data/ui-assets'
 import { ThoughtRecordCard } from '@/components/thought-record-card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -241,18 +242,22 @@ const MyMoodPage = () => {
 
   return (
     <View className="min-h-full bg-background pb-10">
-      {/* 头部 */}
-      <View className="bg-primary px-5 pt-10 pb-8 rounded-b-3xl">
-        <View className="flex flex-row items-center gap-2">
-          <HeartPulse size={18} color="#ffffff" />
-          <Text className="text-white text-lg font-bold">我的情绪周记</Text>
+      {/* 头部氛围图 */}
+      <View className="relative overflow-hidden">
+        <Image src={UI_ASSETS.moodArt} className="w-full h-48" mode="aspectFill" />
+        <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.1) 0%, rgba(24,44,33,0.66) 100%)' }} />
+        <View className="absolute inset-x-0 bottom-0 px-5 pb-5">
+          <View className="flex flex-row items-center gap-2">
+            <HeartPulse size={18} color="#ffffff" />
+            <Text className="text-white text-lg font-bold">我的情绪周记</Text>
+          </View>
+          <Text className="block mt-2 text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.9)' }}>
+            用咨询师的 DTR 记录表观察自己。{'\n'}先照顾好自己，才能照顾好来访者。
+          </Text>
         </View>
-        <Text className="block mt-2 text-base leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>
-          用咨询师的 DTR 记录表观察自己。先照顾好自己，才能照顾好来访者。
-        </Text>
       </View>
 
-      <View className="px-4 -mt-4 pt-2">
+      <View className="px-4 -mt-3 pt-2">
         {/* 本周概览 */}
         <View className="bg-card rounded-2xl border border-border p-4 shadow-sm flex flex-row">
           <View className="flex-1 items-center">

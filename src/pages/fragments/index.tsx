@@ -1,7 +1,8 @@
-import { View, Text } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { ChevronRight, Target } from 'lucide-react-taro'
 import { fragmentGroups, fragments } from '@/data/fragments'
+import { UI_ASSETS } from '@/data/ui-assets'
 
 const FragmentsPage = () => {
   const router = useRouter()
@@ -18,12 +19,16 @@ const FragmentsPage = () => {
 
   return (
     <View className="min-h-full bg-background">
-      <View className="bg-primary px-5 pt-10 pb-8 rounded-b-3xl">
-        <Text className="block text-white text-lg font-bold">{group.name}</Text>
-        <Text className="block text-lg mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.85)' }}>{group.desc}</Text>
+      <View className="relative overflow-hidden">
+        <Image src={UI_ASSETS.fragmentArt} className="w-full h-48" mode="aspectFill" />
+        <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.12) 0%, rgba(24,44,33,0.66) 100%)' }} />
+        <View className="absolute inset-x-0 bottom-0 px-5 pb-5">
+          <Text className="block text-2xl text-white font-semibold">{group.name}</Text>
+          <Text className="block text-base mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.88)' }}>{group.desc}</Text>
+        </View>
       </View>
 
-      <View className="px-4 -mt-4">
+      <View className="px-4 -mt-3">
         {list.map(ex => (
           <View
             key={ex.id}
