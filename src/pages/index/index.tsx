@@ -34,8 +34,8 @@ const IndexPage = () => {
             </View>
           </View>
         </View>
-        <View className="absolute inset-x-0 bottom-0 px-5 pb-5">
-          <Text className="block text-2xl text-white font-semibold leading-snug whitespace-nowrap">
+        <View className="absolute inset-x-0 bottom-0 px-4 pb-5">
+          <Text className="block text-xl text-white font-semibold leading-snug whitespace-nowrap">
             把咨询室装进口袋，让练习随时随地发生
           </Text>
           <View className="mt-3 flex flex-row gap-2">
