@@ -35,14 +35,8 @@ const IndexPage = () => {
           </View>
         </View>
         <View className="absolute inset-x-0 bottom-0 px-5 pb-5">
-          <View className="flex flex-row items-center gap-2">
-            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.85)' }} />
-            <Text className="text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>
-              {studentName ? `${studentName}，` : ''}欢迎回到安全咨询室
-            </Text>
-          </View>
-          <Text className="block text-2xl text-white font-semibold mt-1 leading-snug">
-            把 CBT 的每一项技术，{'\n'}练成你的本能。
+          <Text className="block text-2xl text-white font-semibold leading-snug whitespace-nowrap">
+            把咨询室装进口袋，让练习随时随地发生
           </Text>
           <View className="mt-3 flex flex-row gap-2">
             <View className="rounded-full px-3 py-2" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
@@ -56,32 +50,9 @@ const IndexPage = () => {
       </View>
 
       <View className="px-4 -mt-2">
-        {/* ================= 完整咨询 大图卡 ================= */}
-        <View
-          className="relative rounded-2xl overflow-hidden shadow-sm"
-          onClick={() => Taro.navigateTo({ url: '/pages/case/index' })}
-        >
-          <Image src={UI_ASSETS.caseArt} className="w-full h-40" mode="aspectFill" />
-          <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.05) 0%, rgba(23,43,33,0.62) 100%)' }} />
-          <View className="absolute inset-x-0 bottom-0 p-4">
-            <View className="flex flex-row items-center gap-2">
-              <Layers size={16} color="#ffffff" />
-              <Text className="text-white text-lg font-semibold">完整咨询</Text>
-            </View>
-            <Text className="block text-sm mt-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
-              陪一位来访者，从评估走到告别
-            </Text>
-          </View>
-          <View className="absolute right-3 bottom-3">
-            <View className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.28)' }}>
-              <ChevronRight size={16} color="#ffffff" />
-            </View>
-          </View>
-        </View>
-
         {/* ================= 片段练习 大图卡 ================= */}
         <View
-          className="relative rounded-2xl overflow-hidden shadow-sm mt-4"
+          className="relative rounded-2xl overflow-hidden shadow-sm"
           onClick={() => Taro.navigateTo({ url: `/pages/fragments/index?id=${fragmentGroups[0].id}` })}
         >
           <Image src={UI_ASSETS.fragmentArt} className="w-full h-40" mode="aspectFill" />
@@ -100,6 +71,29 @@ const IndexPage = () => {
               <View className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.28)' }}>
                 <ChevronRight size={16} color="#ffffff" />
               </View>
+            </View>
+          </View>
+        </View>
+
+        {/* ================= 完整咨询 大图卡 ================= */}
+        <View
+          className="relative rounded-2xl overflow-hidden shadow-sm mt-4"
+          onClick={() => Taro.navigateTo({ url: '/pages/case/index' })}
+        >
+          <Image src={UI_ASSETS.caseArt} className="w-full h-40" mode="aspectFill" />
+          <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.05) 0%, rgba(23,43,33,0.62) 100%)' }} />
+          <View className="absolute inset-x-0 bottom-0 p-4">
+            <View className="flex flex-row items-center gap-2">
+              <Layers size={16} color="#ffffff" />
+              <Text className="text-white text-lg font-semibold">完整咨询</Text>
+            </View>
+            <Text className="block text-sm mt-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
+              陪一位来访者，从评估走到告别
+            </Text>
+          </View>
+          <View className="absolute right-3 bottom-3">
+            <View className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.28)' }}>
+              <ChevronRight size={16} color="#ffffff" />
             </View>
           </View>
         </View>

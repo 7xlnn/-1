@@ -59,11 +59,11 @@ const CasePage = () => {
                     {c.client.name.charAt(0)}
                   </Text>
                 </View>
-                <View className="flex-1 pr-2">
+                <View className="flex-1 pr-2 min-w-0">
                   <View className="flex flex-row items-center gap-2">
-                    <Text className="text-lg font-semibold text-foreground">{c.title}</Text>
+                    <Text className="text-lg font-semibold text-foreground truncate whitespace-nowrap min-w-0">{c.title}</Text>
                     <View
-                      className={`rounded-full px-2 py-1 ${
+                      className={`rounded-full px-2 py-1 shrink-0 ${
                         c.difficulty === '入门' ? 'bg-primary' : 'bg-accent'
                       }`}
                     >
@@ -76,8 +76,8 @@ const CasePage = () => {
                       </Text>
                     </View>
                   </View>
-                  <Text className="block text-lg text-muted-foreground mt-1">
-                    {c.client.age}岁 · {c.client.gender} · {c.theme} · {c.sessions.length} 次会谈
+                  <Text className="block text-lg text-muted-foreground mt-1 truncate whitespace-nowrap">
+                    {c.client.age}岁 · {c.sessions.length} 次会谈
                   </Text>
                 </View>
                 <ChevronRight size={16} color="#9AA19A" />
