@@ -23,6 +23,12 @@ export class HomeworkController {
     return this.homework.listTeacher(status)
   }
 
+  // 教师端：班级完成数据统计
+  @Get('teacher/stats')
+  teacherStats() {
+    return this.homework.stats()
+  }
+
   // 详情（学生/教师共用）
   @Get('detail/:id')
   detail(@Param('id', ParseIntPipe) id: number) {

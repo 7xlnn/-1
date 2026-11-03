@@ -141,6 +141,83 @@ export class HomeworkService {
     return { ok: true, id: (data as { id: number }).id }
   }
 
+  // 班级完成数据统计（教师端）
+  async stats() {
+    // 拉取全部（含完整 content 之外的字段），供前端做完成统计与直观图
+    const { data, error } = await this.client()
+      .from('submissions')
+      .select('id, student_name, student_id, type, title, group, sub, status, score, created_at')
+      .order('created_at', { ascending: false })
+      .limit(2000)
+    if (error) throw new Error(`统计数据失败: ${error.message}`)
+    const rows = (data ?? []) as unknown as SubmissionRow[]
+
+    const TYPE_LABEL: Record<string, string> = {
+      fragment: '片段练习',
+      conceptualization: '概念化',
+      session: '完整咨询',
+      mood: '情绪周记',
+    }
+    const TYPES = ['fragment', 'conceptualization', 'session', 'mood']
+
+    // 参与学生（按姓名去重，缺姓名归入"未署名"）
+    const students = new Map<string, { name: string; total: number; pending: number; graded: number; byType: Record<string, number>; mood: number }>()
+    for (const r of rows) {
+      const name = (r.student_name || '').trim()
+      const key = name || '（未署名）'
+      if (!students.has(key)) {
+        students.set(key, { name: key, total: 0, pending: 0, graded: 0, byType: { fragment: 0, conceptualization: 0, session: 0, mood: 0 }, mood: 0 })
+      }
+      const s = students.get(key)!
+      s.total += 1
+      if (r.status === 'pending') s.pending += 1
+      else s.graded += 1
+      const t = (r.type || 'fragment') as string
+      if (t in s.byType) s.byType[t] += 1
+      if (t === 'mood') s.mood += 1
+    }
+
+    // 各类型统计
+    const byType = TYPES.map((t) => {
+      const items = rows.filter((r) => r.type === t)
+      return {
+        type: t,
+        label: TYPE_LABEL[t] || t,
+        count: items.length,
+        pending: items.filter((i) => i.status === 'pending').length,
+        graded: items.filter((i) => i.status === 'graded').length,
+      }
+    })
+
+    // 汇总评分（排除未评分）
+    const scoredRows = rows.filter((r) => typeof r.score === 'number' && r.status === 'graded')
+    const avgScore = scoredRows.length
+      ? Math.round((scoredRows.reduce((acc, r) => acc + (r.score ?? 0), 0) / scoredRows.length) * 10) / 10
+      : 0
+
+    const overview = {
+      studentCount: students.size,
+      total: rows.length,
+      pending: rows.filter((r) => r.status === 'pending').length,
+      graded: rows.filter((r) => r.status === 'graded').length,
+      reviewed: rows.filter((r) => r.status === 'reviewed').length,
+      avgScore,
+    }
+
+    // 学生完成榜（按提交数降序）
+    const byStudent = Array.from(students.values())
+      .map((s) => ({
+        name: s.name,
+        total: s.total,
+        pending: s.pending,
+        graded: s.graded,
+        byType: s.byType,
+      }))
+      .sort((a, b) => b.total - a.total)
+
+    return { updatedAt: new Date().toISOString(), overview, byType, byStudent }
+  }
+
   // 教师批改
   async grade(id: number, dto: GradeDto) {
     const row = await this.detail(id)

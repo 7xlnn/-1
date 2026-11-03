@@ -112,7 +112,42 @@ export async function markSubmissionReviewed(id: number): Promise<void> {
   console.log('[homework] review response:', res.data)
 }
 
-// 删除作业（教师端）
+// ===== 班级完成数据统计（教师端）=====
+export interface TeacherStats {
+  updatedAt: string
+  overview: {
+    studentCount: number
+    total: number
+    pending: number
+    graded: number
+    reviewed: number
+    avgScore: number
+  }
+  byType: {
+    type: SubmissionType
+    label: string
+    count: number
+    pending: number
+    graded: number
+  }[]
+  byStudent: {
+    name: string
+    total: number
+    pending: number
+    graded: number
+    byType: Record<SubmissionType, number>
+  }[]
+}
+
+// 教师端：班级完成数据统计
+export async function fetchTeacherStats(): Promise<TeacherStats | null> {
+  const res = await Network.request({
+    url: `${BASE}/teacher/stats`,
+    method: 'GET',
+  })
+  console.log('[homework] teacher stats response:', res.data)
+  return (res.data as TeacherStats) ?? null
+}
 export async function deleteSubmission(id: number): Promise<void> {
   const res = await Network.request({
     url: `${BASE}/${id}`,
