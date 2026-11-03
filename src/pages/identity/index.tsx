@@ -116,10 +116,7 @@ export default function IdentityPage() {
                   placeholder="请输入姓名"
                 />
               </View>
-              <Text className="block text-xs text-muted-foreground leading-relaxed">
-                你的练习记录与情绪周记会以「学号 · 姓名」提交给教师，教师可在工作台按学号准确归集与批改。跨设备登录同一学号，历史记录也会保留。
-              </Text>
-            </CardContent>
+              </CardContent>
           </Card>
         ) : (
           <Card>
