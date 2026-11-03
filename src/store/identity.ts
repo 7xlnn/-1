@@ -8,9 +8,11 @@ interface IdentityState {
   studentName: string
   teacherName: string
   studentId: string
+  studentNo: string
   setRole: (r: Role) => void
   setStudentName: (n: string) => void
   setTeacherName: (n: string) => void
+  setStudentNo: (no: string) => void
 }
 
 const KEY = 'cbt_identity_v1'
@@ -19,24 +21,27 @@ function genId() {
   return 'stu_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 
-function load(): { role: Role; studentName: string; teacherName: string; studentId: string } {
+function load(): { role: Role; studentName: string; teacherName: string; studentId: string; studentNo: string } {
   try {
     const raw = Taro.getStorageSync(KEY)
     // 兼容多端 storage 存储格式：可能直接展开，也可能包裹在 { data: {...} } 内
     const obj = raw && typeof raw === 'object' && 'data' in raw ? (raw as any).data : raw
     if (obj && typeof obj === 'object') {
-      const studentId = obj.studentId || genId()
+      const studentNo = (obj.studentNo || '').trim()
+      // 学号作为稳定标识（student_id 关联作业），未设置时以设备随机 ID 兜底
+      const studentId = studentNo || obj.studentId || genId()
       return {
         role: obj.role === 'teacher' ? 'teacher' : 'student',
         studentName: obj.studentName || '',
         teacherName: obj.teacherName || '老师',
         studentId,
+        studentNo,
       }
     }
   } catch (e) {
     // ignore
   }
-  return { role: 'student', studentName: '', teacherName: '老师', studentId: genId() }
+  return { role: 'student', studentName: '', teacherName: '老师', studentId: genId(), studentNo: '' }
 }
 
 const initial = load()
@@ -56,6 +61,7 @@ export const useIdentity = create<IdentityState>((set) => ({
   studentName: initial.studentName,
   teacherName: initial.teacherName,
   studentId: initial.studentId,
+  studentNo: initial.studentNo,
   setRole: (role) => {
     persist({ role })
     set({ role })
@@ -68,4 +74,16 @@ export const useIdentity = create<IdentityState>((set) => ({
     persist({ teacherName })
     set({ teacherName })
   },
+  setStudentNo: (studentNo) => {
+    const no = (studentNo || '').trim()
+    // 学号作为稳定标识：写入 studentId 覆盖设备随机 ID
+    persist({ studentNo: no, studentId: studentIdValue(no) })
+    set({ studentNo: no, studentId: studentIdValue(no) })
+  },
 }))
+
+// 学号非空时用它作为稳定 student_id，否则回退到当前 course store 里的 ID
+function studentIdValue(no: string) {
+  if (no) return no
+  return useIdentity.getState().studentId || genId()
+}

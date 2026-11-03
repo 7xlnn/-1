@@ -6,14 +6,15 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { useIdentity } from '@/store/identity'
 import { UI_ASSETS } from '@/data/ui-assets'
-import { UserRound, LockKeyhole } from 'lucide-react-taro'
+import { UserRound, LockKeyhole, IdCard } from 'lucide-react-taro'
 
 /** 教师口令（统一修改入口）。仅设此处即可全局生效。 */
 export const TEACHER_PASSCODE = 'cbt2026'
 
 export default function IdentityPage() {
-  const { role, studentName, setRole, setStudentName } = useIdentity()
+  const { role, studentName, studentNo, setRole, setStudentName, setStudentNo } = useIdentity()
   const [nameInput, setNameInput] = useState(studentName)
+  const [noInput, setNoInput] = useState(studentNo)
   const [showTeacher, setShowTeacher] = useState(role === 'teacher')
   const [teacherOpen, setTeacherOpen] = useState(false)
   const [passcode, setPasscode] = useState('')
@@ -21,18 +22,27 @@ export default function IdentityPage() {
 
   const handleSave = () => {
     const name = nameInput.trim()
+    const no = noInput.trim()
+    if (!no) {
+      Taro.showToast({ title: '请填写学号', icon: 'none' })
+      return
+    }
     if (!name) {
       Taro.showToast({ title: '请填写姓名', icon: 'none' })
       return
     }
     setStudentName(name)
+    setStudentNo(no)
     Taro.showToast({ title: '已保存', icon: 'success' })
     setTimeout(() => Taro.navigateBack(), 500)
   }
 
   const chooseRole = (r: 'student' | 'teacher') => {
     setRole(r)
-    if (r === 'student') setNameInput(studentName)
+    if (r === 'student') {
+      setNameInput(studentName)
+      setNoInput(studentNo)
+    }
   }
 
   // 教师登录：输入口令解锁（教师无需姓名）
@@ -87,16 +97,27 @@ export default function IdentityPage() {
         {!isTeacher ? (
           <Card>
             <CardContent className="p-4">
-              <Text className="block text-sm text-muted-foreground mb-2">你的姓名</Text>
+              <Text className="block text-sm text-muted-foreground mb-2">学号</Text>
+              <View className="bg-secondary rounded-lg px-3 py-1 mb-4">
+                <View className="flex flex-row items-center gap-2">
+                  <IdCard size={16} color="#9AA19A" />
+                  <Input
+                    value={noInput}
+                    onInput={(e) => setNoInput(e.detail.value)}
+                    placeholder="请输入学号，用于关联你的作业"
+                  />
+                </View>
+              </View>
+              <Text className="block text-sm text-muted-foreground mb-2">姓名</Text>
               <View className="bg-secondary rounded-lg px-3 py-1 mb-4">
                 <Input
                   value={nameInput}
                   onInput={(e) => setNameInput(e.detail.value)}
-                  placeholder="提交作业时显示的姓名"
+                  placeholder="请输入姓名"
                 />
               </View>
               <Text className="block text-xs text-muted-foreground leading-relaxed">
-                你的练习记录与情绪周记会以这个姓名提交给教师，教师批改后可在「我的作业」查看分数与评语。
+                你的练习记录与情绪周记会以「学号 · 姓名」提交给教师，教师可在工作台按学号准确归集与批改。跨设备登录同一学号，历史记录也会保留。
               </Text>
             </CardContent>
           </Card>

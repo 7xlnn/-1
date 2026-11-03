@@ -160,13 +160,14 @@ export class HomeworkService {
     }
     const TYPES = ['fragment', 'conceptualization', 'session', 'mood']
 
-    // 参与学生（按姓名去重，缺姓名归入"未署名"）
-    const students = new Map<string, { name: string; total: number; pending: number; graded: number; byType: Record<string, number>; mood: number }>()
+    // 参与学生（按学号 student_no 归集，学号唯一、姓名可重名；缺学号时退回姓名）
+    const students = new Map<string, { no: string; name: string; total: number; pending: number; graded: number; byType: Record<string, number>; mood: number }>()
     for (const r of rows) {
+      const no = (r.student_id || '').trim()
       const name = (r.student_name || '').trim()
-      const key = name || '（未署名）'
+      const key = no || name || '（未署名）'
       if (!students.has(key)) {
-        students.set(key, { name: key, total: 0, pending: 0, graded: 0, byType: { fragment: 0, conceptualization: 0, session: 0, mood: 0 }, mood: 0 })
+        students.set(key, { no: no || '', name: name || '（未署名）', total: 0, pending: 0, graded: 0, byType: { fragment: 0, conceptualization: 0, session: 0, mood: 0 }, mood: 0 })
       }
       const s = students.get(key)!
       s.total += 1
@@ -207,6 +208,7 @@ export class HomeworkService {
     // 学生完成榜（按提交数降序）
     const byStudent = Array.from(students.values())
       .map((s) => ({
+        no: s.no,
         name: s.name,
         total: s.total,
         pending: s.pending,

@@ -89,6 +89,11 @@ export default function TeacherPage() {
           <View className="flex-1 pr-2">
             <View className="flex flex-row items-center gap-2 mb-2">
               <Text className="block text-base font-medium text-foreground">{item.student_name}</Text>
+              {item.student_no ? (
+                <View className="rounded-md px-1 py-1" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
+                  <Text className="block text-xs" style={{ color: '#5B8C7B' }}>{item.student_no}</Text>
+                </View>
+              ) : null}
               {isPendingTab && (
                 <View className="w-2 h-2 rounded-full bg-destructive" />
               )}
@@ -326,7 +331,14 @@ export default function TeacherPage() {
                     </View>
                     <View className="flex-1">
                       <View className="flex flex-row items-center justify-between mb-1">
-                        <Text className="block text-sm text-foreground">{s.name}</Text>
+                        <View className="flex flex-row items-center gap-2 min-w-0">
+                          <Text className="block text-sm text-foreground">{s.name}</Text>
+                          {s.no ? (
+                            <View className="rounded-md px-1 py-1" style={{ backgroundColor: 'rgba(91,140,123,0.12)' }}>
+                              <Text className="block text-xs" style={{ color: '#5B8C7B' }}>{s.no}</Text>
+                            </View>
+                          ) : null}
+                        </View>
                         <View className="flex flex-row items-center gap-2">
                           {s.pending > 0 && (
                             <Text className="block text-xs" style={{ color: '#C0654F' }}>待处理 {s.pending}</Text>

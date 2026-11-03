@@ -16,6 +16,7 @@ export interface SubmissionListItem {
   comment: string | null
   graded_at: string | null
   created_at: string
+  student_no?: string
 }
 
 export interface SubmissionDetail extends SubmissionListItem {
@@ -62,7 +63,9 @@ export async function fetchTeacherList(status?: 'pending' | 'graded' | 'processe
     method: 'GET',
   })
   console.log('[homework] teacher list response:', res.data)
-  return (res.data as { list: SubmissionListItem[] }).list ?? []
+  const list = (res.data as { list: SubmissionListItem[] }).list ?? []
+  // 后端返回字段为 student_id（学号），映射为 student_no 供前端展示
+  return list.map((it) => ({ ...it, student_no: (it as unknown as { student_id?: string }).student_id || '' }))
 }
 
 // 详情
@@ -131,6 +134,7 @@ export interface TeacherStats {
     graded: number
   }[]
   byStudent: {
+    no: string
     name: string
     total: number
     pending: number
