@@ -20,6 +20,11 @@ function parsePort(): number {
     return envPort;
   }
 
+  const railwayPort = parseInt(process.env.PORT || '', 10);
+  if (!isNaN(railwayPort) && railwayPort > 0 && railwayPort < 65536) {
+    return railwayPort;
+  }
+
   return 3000;
 }
 
