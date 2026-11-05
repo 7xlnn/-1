@@ -4,7 +4,8 @@ import Taro from '@tarojs/taro'
 import { Network } from '@/network'
 import { Button } from '@/components/ui/button'
 import { useSessionStore } from '@/store/session'
-import type { ChatMsg } from '@/store/session'
+import type { ChatMsg, Coverage } from '@/store/session'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { UI_ASSETS } from '@/data/ui-assets'
 import { Send, Flag, Target, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react-taro'
 
@@ -15,11 +16,14 @@ interface ChatRoomProps {
 }
 
 const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
-  const { profile, messages, addMessage, setMessages, agentFocus, clientState, sessionGoal, sessionTitle } = useSessionStore()
+  const { profile, messages, addMessage, setMessages, agentFocus, clientState, sessionGoal, sessionTitle, setPendingSummary } = useSessionStore()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [failed, setFailed] = useState(false)
   const [goalOpen, setGoalOpen] = useState(false)
+  const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryData, setSummaryData] = useState<Coverage | null>(null)
+  const [summaryOpen, setSummaryOpen] = useState(false)
   /** 中断标志：stop 置 true，请求返回后据此丢弃回复 */
   const abortRef = useRef(false)
 
@@ -96,6 +100,52 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
     Taro.showToast({ title: '已停止，可继续对话', icon: 'none' })
   }
 
+  /** 结束前请求 AI 达成度小结（B：软引导，不强制） */
+  const requestSummary = async (): Promise<Coverage> => {
+    console.log('[CBT summary request]', messages.length, 'turns')
+    const res = await Network.request({
+      url: '/api/cbt/summary',
+      method: 'POST',
+      data: { profile, messages, sessionTitle }
+    })
+    console.log('[CBT summary response]', res.data)
+    const d = res.data as { covered?: string[]; missed?: string[] }
+    return { covered: d?.covered ?? [], missed: d?.missed ?? [] }
+  }
+
+  /** 点击"结束"：先弹达成度小结，学生决定继续或结束 */
+  const onEnd = async () => {
+    if (!profile || !messages.length) {
+      Taro.navigateTo({ url: endUrl })
+      return
+    }
+    setSummaryLoading(true)
+    try {
+      const cov = await requestSummary()
+      setSummaryData(cov)
+      setSummaryOpen(true)
+    } catch (e) {
+      console.warn('[CBT summary error]', e)
+      Taro.navigateTo({ url: endUrl })
+    } finally {
+      setSummaryLoading(false)
+    }
+  }
+
+  /** 确认结束：把小结暂存给反馈页/作业，并前往反馈 */
+  const confirmEnd = () => {
+    setPendingSummary(summaryData)
+    setSummaryOpen(false)
+    setSummaryData(null)
+    Taro.navigateTo({ url: endUrl })
+  }
+
+  /** 继续对话：关掉小结层，留在咨询室 */
+  const keepTalking = () => {
+    setSummaryOpen(false)
+    setSummaryData(null)
+  }
+
   /** 是否可重新生成（至少存在一条用户消息且当前不在加载） */
   const canRegenerate =
     !loading &&
@@ -106,6 +156,7 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
     })()
 
   return (
+    <>
     <View className="flex flex-col h-full bg-background">
       {/* 咨询室氛围头图横幅 */}
       <View className="relative h-28 overflow-hidden" style={{ backgroundColor: '#5B8C7B' }}>
@@ -228,13 +279,62 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
           </Button>
         </View>
         <View className="mt-2 flex justify-center">
-          <Button variant="ghost" size="sm" onClick={() => Taro.navigateTo({ url: endUrl })}>
+          <Button variant="ghost" size="sm" onClick={onEnd} disabled={summaryLoading}>
             <Flag size={15} color="#6E756E" />
-            <Text className="text-base text-muted-foreground ml-1">{endLabel}</Text>
+            <Text className="text-base text-muted-foreground ml-1">{summaryLoading ? '督导正在小结…' : endLabel}</Text>
           </Button>
         </View>
       </View>
     </View>
+
+    {/* 结束前达成度小结弹层（B：软引导，学生可继续或结束） */}
+    <Dialog open={summaryOpen} onOpenChange={open => { if (!open) keepTalking() }}>
+      <DialogContent className="w-[88%] rounded-2xl">
+        <DialogHeader>
+          <DialogTitle>本次练习小结</DialogTitle>
+          <DialogDescription>
+            由督导助手根据你们的对话回看生成（不影响评分，仅供参考）
+          </DialogDescription>
+        </DialogHeader>
+        <View className="py-2">
+          <Text className="block text-base font-medium text-foreground">已经聊到的</Text>
+          {(summaryData?.covered?.length ?? 0) ? (
+            <View className="mt-2 flex flex-col gap-2">
+              {summaryData!.covered.map((t, i) => (
+                <View key={i} className="bg-secondary bg-opacity-70 rounded-lg px-3 py-2 flex flex-row items-start gap-2">
+                  <Text className="text-primary font-semibold mt-px">✓</Text>
+                  <Text className="block flex-1 text-base leading-relaxed text-foreground">{t}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text className="block text-base text-muted-foreground mt-1">—</Text>
+          )}
+          <Text className="block text-base font-medium text-foreground mt-3">可以再深入的</Text>
+          {(summaryData?.missed?.length ?? 0) ? (
+            <View className="mt-2 flex flex-col gap-2">
+              {summaryData!.missed.map((t, i) => (
+                <View key={i} className="bg-card border border-border rounded-lg px-3 py-2 flex flex-row items-start gap-2">
+                  <Text className="text-muted-foreground font-semibold mt-px">·</Text>
+                  <Text className="block flex-1 text-base leading-relaxed text-foreground">{t}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text className="block text-base text-muted-foreground mt-1">没有明显欠缺，可以结束</Text>
+          )}
+        </View>
+        <DialogFooter className="flex flex-row gap-2">
+          <Button variant="outline" className="flex-1" onClick={keepTalking}>
+            <Text className="text-base">继续聊聊</Text>
+          </Button>
+          <Button className="flex-1" onClick={confirmEnd}>
+            <Text className="text-base">就到这里，去反馈</Text>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }
 

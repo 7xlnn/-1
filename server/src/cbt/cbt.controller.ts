@@ -1,5 +1,5 @@
 import { Body, Controller, Headers, Post, HttpCode } from '@nestjs/common';
-import { CbtService, ChatPayload, FeedbackPayload, MoodRecordPayload, SupervisorAskPayload } from './cbt.service';
+import { CbtService, ChatPayload, FeedbackPayload, MoodRecordPayload, SummaryPayload, SupervisorAskPayload } from './cbt.service';
 
 @Controller('cbt')
 export class CbtController {
@@ -13,6 +13,16 @@ export class CbtController {
   ) {
     console.log('[CBT CHAT] profile:', body.profile?.name, 'messages:', body.messages?.length);
     return this.cbtService.chat(body, headers);
+  }
+
+  @Post('summary')
+  @HttpCode(200)
+  summary(
+    @Body() body: SummaryPayload,
+    @Headers() headers: Record<string, string>
+  ) {
+    console.log('[CBT SUMMARY] profile:', body.profile?.name, 'msg:', body.messages?.length);
+    return this.cbtService.summary(body, headers);
   }
 
   @Post('feedback')

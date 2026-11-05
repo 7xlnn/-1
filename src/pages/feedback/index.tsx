@@ -90,7 +90,7 @@ const BLOCK_STYLE: Record<RichBlock['type'], CSSProperties> = {
 }
 
 const FeedbackPage = () => {
-  const { profile, messages, fragmentId, caseId, sessionIndex, pendingFeedback, clearPersisted, conceptForm } = useSessionStore()
+  const { profile, messages, fragmentId, caseId, sessionIndex, pendingFeedback, clearPersisted, conceptForm, pendingSummary } = useSessionStore()
   const [data, setData] = useState<FeedbackResult | null>(
     pendingFeedback as FeedbackResult | null
   )
@@ -236,6 +236,7 @@ const FeedbackPage = () => {
               messages,
               conceptForm,
               asks: asks.length ? asks : undefined,
+              coverage: pendingSummary ?? undefined,
             }
           : {
               summary: title,
@@ -244,6 +245,7 @@ const FeedbackPage = () => {
               feedback: data.feedback,
               scores: data.scores,
               sessionCheck: data.sessionCheck,
+              coverage: pendingSummary ?? undefined,
             },
       })
       setSubmitted(true)
@@ -296,6 +298,31 @@ const FeedbackPage = () => {
                   </View>
                 )
               })}
+            </View>
+          </View>
+        )}
+
+        {/* 达成度小结（学生结束前 AI 生成，软引导，随作业提交给老师） */}
+        {pendingSummary && (pendingSummary.covered?.length || pendingSummary.missed?.length) && (
+          <View className="bg-card rounded-2xl border border-border p-4 shadow-sm mt-3">
+            <View className="flex flex-row items-center gap-2">
+              <ListChecks size={16} color="#5B8C7B" />
+              <Text className="text-lg font-semibold text-foreground">练习达成度</Text>
+            </View>
+            <Text className="block text-base text-muted-foreground mt-1">结束前由督导助手小结，已随作业提交给老师</Text>
+            <View className="mt-3 flex flex-col gap-2">
+              {(pendingSummary.covered ?? []).map((t, i) => (
+                <View key={`c${i}`} className="bg-secondary bg-opacity-70 rounded-lg px-3 py-2 flex flex-row items-start gap-2">
+                  <Text className="text-primary font-semibold mt-px">✓</Text>
+                  <Text className="block flex-1 text-base leading-relaxed text-foreground">{t}</Text>
+                </View>
+              ))}
+              {(pendingSummary.missed ?? []).map((t, i) => (
+                <View key={`m${i}`} className="bg-card border border-border rounded-lg px-3 py-2 flex flex-row items-start gap-2">
+                  <Text className="text-muted-foreground font-semibold mt-px">·</Text>
+                  <Text className="block flex-1 text-base leading-relaxed text-foreground">{t}</Text>
+                </View>
+              ))}
             </View>
           </View>
         )}

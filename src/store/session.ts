@@ -7,6 +7,12 @@ export interface ChatMsg {
   content: string
 }
 
+/** 结束前 AI 生成的达成度小结 */
+export interface Coverage {
+  covered: string[]
+  missed: string[]
+}
+
 /** 存档内容 */
 interface PersistData {
   messages: ChatMsg[]
@@ -41,6 +47,9 @@ interface SessionState {
   pendingFeedback: unknown
   /** 概念化练习中学生填写的横纵向概念化（供作业提交，不持久化） */
   conceptForm: Record<string, string> | null
+  /** 用户结束前由 AI 生成的达成度小结（临时，不持久化） */
+  pendingSummary: Coverage | null
+  setPendingSummary: (c: Coverage | null) => void
   setPendingFeedback: (d: unknown) => void
   setConceptForm: (f: Record<string, string> | null) => void
   startSession: (p: {
@@ -96,6 +105,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   endLabel: '',
   pendingFeedback: null,
   conceptForm: null,
+  pendingSummary: null,
+  setPendingSummary: c => set({ pendingSummary: c }),
   setPendingFeedback: d => set({ pendingFeedback: d }),
   setConceptForm: f => set({ conceptForm: f }),
   startSession: p => {

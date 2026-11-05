@@ -7,6 +7,13 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface SummaryPayload {
+  profile: ClientProfile;
+  messages: ChatMessage[];
+  taskType?: string;
+  sessionTitle?: string;
+}
+
 export interface ChatPayload {
   profile: ClientProfile;
   messages: ChatMessage[];
@@ -140,6 +147,45 @@ ${stateLines.length ? stateLines.join('\n') : ''}
       temperature: 0.9
     });
     return { reply: res.content };
+  }
+
+  /** 结束前达成度小结：以督导助手视角回看对话，输出已覆盖/可再深入的要点 */
+  private buildSummarySystemPrompt(p: SummaryPayload): string {
+    const c = p.profile;
+    const title = p.sessionTitle || '本次';
+    const task = p.taskType ? `（${p.taskType}练习）` : '';
+    return `你在为一节 CBT 模拟咨询对话做"结束前小结"。咨询师正在与模拟来访者「${c.name}」对话，主题：${title}${task}。
+
+请以温和、非评判的督导助理口吻，只看完整对话记录，用一句简短点评 + 两个列表概括当前进展：
+- covered：这次已经聊到/做到的核心要点（最多 3 条，一句话一条，来自对话实据）
+- missed：还可以继续深入或可能遗漏的要点（最多 3 条，一句话一条；若没有则给空数组）
+
+要求：
+1. 客观基于对话内容，不要编造对话里不存在的事实。
+2. 不评价咨询师对错，只客观点出"已触及/可推进"的点。
+3. 语言简洁、具体、像督导在旁小声提醒。
+
+只输出如下 JSON，不要多余文字与代码块：
+<SUMMARY>{"covered":["…","…"],"missed":["…","…"]}</SUMMARY>`;
+  }
+
+  async summary(payload: SummaryPayload, headers: Record<string, string>): Promise<{ covered: string[]; missed: string[] }> {
+    const client = this.buildClient(HeaderUtils.extractForwardHeaders(headers));
+    const system = this.buildSummarySystemPrompt(payload);
+    const messages: ChatMessage[] = [{ role: 'system', content: system }, ...payload.messages];
+    const res = await client.invoke(messages, {
+      model: 'doubao-seed-2-0-pro-260215',
+      temperature: 0.3
+    });
+    const match = res.content.match(/<SUMMARY>([\s\S]*?)<\/SUMMARY>/);
+    if (!match) return { covered: [], missed: [] };
+    try {
+      const parsed = JSON.parse(match[1].trim()) as { covered?: unknown; missed?: unknown };
+      const asList = (v: unknown): string[] => (Array.isArray(v) ? v.map((i) => String(i)).filter(Boolean).slice(0, 3) : []);
+      return { covered: asList(parsed.covered), missed: asList(parsed.missed) };
+    } catch {
+      return { covered: [], missed: [] };
+    }
   }
 
   /** 选择任务的督导评语侧重 */
