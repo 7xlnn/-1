@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
 import * as express from 'express';
+import * as path from 'path';
+import * as fs from 'fs';
 import { HttpStatusInterceptor } from '@/interceptors/http-status.interceptor';
 
 function parsePort(): number {
@@ -39,6 +41,28 @@ async function bootstrap() {
 
   // 2. 解析端口
   const port = parsePort();
+
+  // 3. 托管前端静态产物（H5 构建输出 dist-web，位于项目根目录）
+  const distWeb = path.resolve(__dirname, '../../dist-web');
+  const server = app.getHttpAdapter().getInstance();
+  if (fs.existsSync(distWeb)) {
+    // 静态资源
+    server.use(express.static(distWeb));
+    // SPA 回退：非 /api 路径都落到 index.html，避免刷新/直达子路由 404
+    server.get('*', (req, res, next) => {
+      if (req.originalUrl.startsWith('/api')) return next();
+      const indexPath = path.join(distWeb, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        next();
+      }
+    });
+    console.log(`Static frontend hosting enabled at ${distWeb}`);
+  } else {
+    console.warn(`Static frontend not found at ${distWeb}, skipping SPA hosting`);
+  }
+
   try {
     await app.listen(port);
     console.log(`Server running on http://localhost:${port}`);

@@ -1,0 +1,23 @@
+{
+  "idempotencyKey": "074d4aee-1e34-4a28-83b1-e9a6d8286254",
+  "createdAt": 1793881216092,
+  "sourcePackageSizeBytes": 15623350,
+  "request": {
+    "project_id": "7704612017159569434",
+    "application_type": "mini_program",
+    "commit_hash": "d95168f4b41d8c7bf7dd8b692b53a65e65826bed",
+    "source_root": "/workspace/projects",
+    "is_sync_db_to_prod": false,
+    "table_sync_configs": [],
+    "connector_configs": [],
+    "coze_file_content": "[project]\nentrypoint = \"server.js\"\nrequires = [ \"nodejs-24\" ]\nproject_type = \"miniprogram\"\ntemplate = \"taro\"\nversion = \"0.1.9\"\nappliedPatches = [ ]\nproject_id = \"7704612017159569434\"\n\n[dev]\nbuild = [ \"bash\", \".cozeproj/scripts/dev_build.sh\" ]\nbuild_win = [\n  \"powershell.exe\",\n  \"-NoProfile\",\n  \"-ExecutionPolicy\",\n  \"Bypass\",\n  \"-File\",\n  \".cozeproj/scripts/dev_build.ps1\"\n]\nrun = [ \"bash\", \".cozeproj/scripts/dev_run.sh\" ]\nrun_win = [\n  \"powershell.exe\",\n  \"-NoProfile\",\n  \"-ExecutionPolicy\",\n  \"Bypass\",\n  \"-File\",\n  \".cozeproj/scripts/dev_run.ps1\"\n]\ndeps = [ \"git\", \"rsync\" ]\npack = [ \"bash\", \".cozeproj/scripts/pack.sh\" ]\npack_win = [\n  \"powershell.exe\",\n  \"-NoProfile\",\n  \"-ExecutionPolicy\",\n  \"Bypass\",\n  \"-File\",\n  \".cozeproj/scripts/pack.ps1\"\n]\nvalidate = [ \"bash\", \".cozeproj/scripts/validate.sh\" ]\nvalidate_win = [\n  \"powershell.exe\",\n  \"-NoProfile\",\n  \"-ExecutionPolicy\",\n  \"Bypass\",\n  \"-File\",\n  \".cozeproj/scripts/validate.ps1\"\n]\n\n[deploy]\nbuild = [ \"bash\", \".cozeproj/scripts/deploy_build.sh\" ]\nrun = [ \"bash\", \".cozeproj/scripts/deploy_run.sh\" ]\ndeps = [ \"git\", \"rsync\" ]\n",
+    "encrypt_env_variable": "MIIBHzCB9AIBAQIBAjGByTCBxgRUdHJuOmttczpjbi1iZWlqaW5nOjIxMTMwMjk0MDg6a2V5cmluZ3MvQ296ZUNvZGluZ1Byb2Qva2V5cy9Db3plQ29kaW5nU2VjcmV0TWFzdGVyS2V5BG4K/gGBVVVPkYdBKin9i76bAAB2lAVvDj0h5P4RZVSfGJ3uanxGyO60mByTX6wRHqJBRu9Y7rwAUln9IaVPakNoN2arcEBDphfx3G9PdvGwxiUCa3ikcTvkjRF2P5QofgxJon+D+9xoIQYJV/EKUDEABAxtrEWuwn3T1LMqS8IEENoCpOhjmxq5uyVCr8kUzuEwJgQMGPPpDBHoyccMjGJVBAQO8zuSBBBuWINZKqx7cIo7TYAjEtbM",
+    "deploy_config": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "max_instance": 2,
+      "max_concurrency": 100
+    },
+    "service_type": 1
+  }
+}
