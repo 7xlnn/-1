@@ -1,8 +1,7 @@
 import type { FragmentExercise } from './types'
 
 export const fragmentGroups = [
-  { id: 'basic', name: '基本技术', desc: '共情 · 无条件积极关注 · 真诚' },
-  { id: 'conceptualization', name: '认知概念化', desc: '横向与纵向概念化' },
+  { id: 'basic', name: '基本技术', desc: '共情 · 无条件积极关注 · 真诚 · 概念化' },
   { id: 'automatic', name: '自动思维', desc: '识别并挑战自动思维' },
   { id: 'intermediate', name: '中间信念', desc: '识别并矫正态度、规则、假设' },
   { id: 'core', name: '核心信念', desc: '识别并矫正核心信念' }
@@ -151,11 +150,11 @@ export const fragments: FragmentExercise[] = [
       tags: ['咨询关系', '防御', '信任议题']
     }
   },
-  // ============ 4. 概念化（刘先生） ============
+  // ============ 概念化（刘先生 · 归入基本技术） ============
   {
     id: 'conceptualization-liu',
-    category: 'conceptualization',
-    categoryName: '认知概念化',
+    category: 'basic',
+    categoryName: '基本技术',
     title: '横向与纵向概念化',
     subtitle: '从一段对话中整理个案全貌',
     suggestedTurns: 10,

@@ -1,18 +1,21 @@
-import { useState } from 'react'
-import { View, Text, Image, ScrollView } from '@tarojs/components'
+import { View, Text, Image } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import { ChevronRight, Target } from 'lucide-react-taro'
 import { fragmentGroups, fragments } from '@/data/fragments'
 import { UI_ASSETS } from '@/data/ui-assets'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const FragmentsPage = () => {
   const router = useRouter()
-  const [activeGroup, setActiveGroup] = useState<string>(
-    () => fragmentGroups.find(g => g.id === router.params.id)?.id ?? fragmentGroups[0].id
-  )
-  const group = fragmentGroups.find(g => g.id === activeGroup)
-  const list = fragments.filter(f => f.category === activeGroup)
+  const group = fragmentGroups.find(g => g.id === router.params.id)
+  const list = fragments.filter(f => f.category === router.params.id)
+
+  if (!group) {
+    return (
+      <View className="p-6">
+        <Text className="text-lg text-muted-foreground">未找到该练习组</Text>
+      </View>
+    )
+  }
 
   return (
     <View className="min-h-full bg-background">
@@ -20,28 +23,9 @@ const FragmentsPage = () => {
         <Image src={UI_ASSETS.fragmentArt} className="w-full h-48" mode="aspectFill" />
         <View className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(31,61,45,0.12) 0%, rgba(24,44,33,0.66) 100%)' }} />
         <View className="absolute inset-x-0 bottom-0 px-5 pb-5">
-          <Text className="block text-2xl text-white font-semibold">{group?.name}</Text>
-          <Text className="block text-base mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.88)' }}>{group?.desc}</Text>
+          <Text className="block text-2xl text-white font-semibold">{group.name}</Text>
+          <Text className="block text-base mt-2 leading-relaxed" style={{ color: 'rgba(255,255,255,0.88)' }}>{group.desc}</Text>
         </View>
-      </View>
-
-      {/* 分组切换：共情/概念化/自动思维/中间信念/核心信念 */}
-      <View className="px-2 mt-2">
-        <Tabs value={activeGroup} onValueChange={setActiveGroup} className="w-full">
-          <ScrollView scrollX className="w-full" scrollWithAnimation>
-            <TabsList className="inline-flex h-auto py-2 px-2 gap-1 bg-transparent">
-              {fragmentGroups.map(g => (
-                <TabsTrigger
-                  key={g.id}
-                  value={g.id}
-                  className="rounded-full px-4 h-9 text-base"
-                >
-                  {g.name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </ScrollView>
-        </Tabs>
       </View>
 
       <View className="px-4 mt-2">
