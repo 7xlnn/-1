@@ -100,8 +100,7 @@ export default defineConfig<'vite'>(async (merge, _env) => {
     defineConstants: {
       PROJECT_DOMAIN: JSON.stringify(
         process.env.PROJECT_DOMAIN ||
-          process.env.COZE_PROJECT_DOMAIN_DEFAULT ||
-          '',
+          'https://server-production-b171.up.railway.app',
       ),
       TARO_ENV: JSON.stringify(process.env.TARO_ENV),
     },
