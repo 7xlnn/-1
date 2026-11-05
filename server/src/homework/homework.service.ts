@@ -220,6 +220,50 @@ export class HomeworkService {
     return { updatedAt: new Date().toISOString(), overview, byType, byStudent }
   }
 
+  // ===== 学生本地草稿（进度/对话/周记）云备份 =====
+
+  async draftUpsert(studentId: string, key: string, data: string) {
+    const sid = (studentId || '').trim()
+    const k = (key || '').trim()
+    if (!sid) throw new BadRequestException('缺少学生标识')
+    if (!k) throw new BadRequestException('缺少草稿 key')
+    if (!data) throw new BadRequestException('缺少草稿内容')
+    const { error } = await this.client()
+      .from('drafts')
+      .upsert(
+        { student_id: sid.slice(0, 128), key: k.slice(0, 200), data, updated_at: new Date().toISOString() },
+        { onConflict: 'student_id,key' }
+      )
+    if (error) throw new Error(`草稿保存失败: ${error.message}`)
+    return { ok: true }
+  }
+
+  async draftList(studentId: string) {
+    const sid = (studentId || '').trim()
+    if (!sid) throw new BadRequestException('缺少学生标识')
+    const { data, error } = await this.client()
+      .from('drafts')
+      .select('key, data, updated_at')
+      .eq('student_id', sid)
+      .order('updated_at', { ascending: false })
+      .limit(500)
+    if (error) throw new Error(`草稿读取失败: ${error.message}`)
+    return { list: (data ?? []) as unknown[] }
+  }
+
+  async draftDelete(studentId: string, key: string) {
+    const sid = (studentId || '').trim()
+    const k = (key || '').trim()
+    if (!sid || !k) throw new BadRequestException('缺少学生标识或草稿 key')
+    const { error } = await this.client()
+      .from('drafts')
+      .delete()
+      .eq('student_id', sid)
+      .eq('key', k)
+    if (error) throw new Error(`草稿删除失败: ${error.message}`)
+    return { ok: true }
+  }
+
   // 教师批改
   async grade(id: number, dto: GradeDto) {
     const row = await this.detail(id)

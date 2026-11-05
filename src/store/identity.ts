@@ -79,6 +79,12 @@ export const useIdentity = create<IdentityState>((set) => ({
     // 学号作为稳定标识：写入 studentId 覆盖设备随机 ID
     persist({ studentNo: no, studentId: studentIdValue(no) })
     set({ studentNo: no, studentId: studentIdValue(no) })
+    // 登录后若有设备其他身份，把本地记录整批备份到该学号名下
+    try {
+      import('@/services/draft').then((m) => m.backupAllLocal())
+    } catch (e) {
+      /* ignore */
+    }
   },
 }))
 

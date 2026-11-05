@@ -126,6 +126,12 @@ const MyMoodPage = () => {
     } catch {
       // ignore
     }
+    // 云端草稿备份（异步）
+    try {
+      import('@/services/draft').then((m) => m.queuePush(storageKey))
+    } catch {
+      // ignore
+    }
   }
 
   const openAdd = () => {
@@ -212,6 +218,11 @@ const MyMoodPage = () => {
       setWeeklySubmitted(true)
       try {
         Taro.setStorageSync(submittedKeyFor(role), true)
+      } catch {
+        // ignore
+      }
+      try {
+        import('@/services/draft').then((m) => m.queuePush(submittedKeyFor(role)))
       } catch {
         // ignore
       }

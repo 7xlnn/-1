@@ -47,6 +47,24 @@ export class HomeworkController {
     return this.homework.markReviewed(id)
   }
 
+  // 学生草稿云备份：保存/更新
+  @Post('draft')
+  draftUpsert(@Body('studentId') studentId: string, @Body('key') key: string, @Body('data') data: string) {
+    return this.homework.draftUpsert(studentId, key, data)
+  }
+
+  // 学生草稿云备份：读取某学生全部
+  @Get('draft')
+  draftList(@Query('studentId') studentId: string) {
+    return this.homework.draftList(studentId || '')
+  }
+
+  // 学生草稿云备份：删除单个（key 走路径避免与 :id 冲突）
+  @Delete('draft/:studentId/:key')
+  draftDelete(@Param('studentId') studentId: string, @Param('key') key: string) {
+    return this.homework.draftDelete(studentId || '', key || '')
+  }
+
   // 教师批改
   @Post('grade/:id')
   grade(@Param('id', ParseIntPipe) id: number, @Body() dto: GradeDto) {

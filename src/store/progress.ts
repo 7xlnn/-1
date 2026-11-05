@@ -23,6 +23,8 @@ interface ProgressState {
   records: ProgressRecord[]
   /** 记录一次已完成练习（结束时不重复计数） */
   addRecord: (r: Omit<ProgressRecord, 'ts'>) => void
+  /** 从本地 storage 重载（云端恢复后调用） */
+  reload: () => void
   /** 彻底清空（供调试） */
   clearAll: () => void
 }
@@ -52,7 +54,14 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
       /* ignore quota */
     }
     set({ records })
+    // 云端草稿备份（异步，不阻塞本地流程）
+    try {
+      import('@/services/draft').then((m) => m.queuePush(KEY))
+    } catch {
+      /* ignore */
+    }
   },
+  reload: () => set({ records: load() }),
   clearAll: () => {
     try {
       Taro.removeStorageSync(KEY)

@@ -135,6 +135,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       /* ignore quota */
     }
     set({ messages })
+    // 云端草稿备份（异步，防抖合并高频对话写入）
+    try {
+      import('@/services/draft').then((m) => m.queuePush(key))
+    } catch {
+      /* ignore */
+    }
   },
   setMessages: msgs => {
     const s = get()
@@ -145,6 +151,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       /* ignore */
     }
     set({ messages: msgs })
+    try {
+      import('@/services/draft').then((m) => m.queuePush(key))
+    } catch {
+      /* ignore */
+    }
   },
   clearPersisted: () => {
     const s = get()
