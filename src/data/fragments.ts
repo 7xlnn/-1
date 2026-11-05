@@ -155,7 +155,7 @@ export const fragments: FragmentExercise[] = [
     id: 'conceptualization-liu',
     category: 'basic',
     categoryName: '基本技术',
-    title: '横向与纵向概念化',
+    title: '概念化',
     subtitle: '从一段对话中整理个案全貌',
     suggestedTurns: 10,
     goals: [
