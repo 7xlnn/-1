@@ -4,6 +4,7 @@ export default defineAppConfig({
     'pages/case/index',
     'pages/my-mood/index',
     'pages/fragments/index',
+    'pages/concept-module/index',
     'pages/fragment-brief/index',
     'pages/chat/index',
     'pages/conceptualization/index',
