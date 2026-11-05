@@ -65,7 +65,7 @@ const IndexPage = () => {
                   <Text className="text-white text-lg font-semibold">片段练习</Text>
                 </View>
                 <Text className="block text-sm mt-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                  共情 · 概念化 · 自动思维 · 信念矫正
+                  共情 · 积极关注 · 真诚 · 概念化
                 </Text>
               </View>
               <View className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.28)' }}>

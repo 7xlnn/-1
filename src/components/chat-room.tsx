@@ -5,7 +5,6 @@ import { Network } from '@/network'
 import { Button } from '@/components/ui/button'
 import { useSessionStore } from '@/store/session'
 import type { ChatMsg, Coverage } from '@/store/session'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { UI_ASSETS } from '@/data/ui-assets'
 import { Send, Flag, Target, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react-taro'
 
@@ -126,6 +125,8 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
       setSummaryOpen(true)
     } catch (e) {
       console.warn('[CBT summary error]', e)
+      Taro.showToast({ title: '小结生成失败，已前往反馈页', icon: 'none' })
+      setPendingSummary(null)
       Taro.navigateTo({ url: endUrl })
     } finally {
       setSummaryLoading(false)
@@ -288,52 +289,64 @@ const ChatRoom = ({ endUrl, endLabel }: ChatRoomProps) => {
     </View>
 
     {/* 结束前达成度小结弹层（B：软引导，学生可继续或结束） */}
-    <Dialog open={summaryOpen} onOpenChange={open => { if (!open) keepTalking() }}>
-      <DialogContent className="w-[88%] rounded-2xl">
-        <DialogHeader>
-          <DialogTitle>本次练习小结</DialogTitle>
-          <DialogDescription>
+    {summaryOpen && (
+      <View
+        style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(15,23,20,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 999,
+        }}
+      >
+        <View className="bg-card rounded-2xl mx-5 w-full max-w-md px-5 pt-5 pb-4" style={{ maxHeight: '78%', overflowY: 'auto' }}>
+          <Text className="block text-xl font-bold text-foreground text-center">本次练习小结</Text>
+          <Text className="block text-sm text-muted-foreground text-center mt-1">
             由督导助手根据你们的对话回看生成（不影响评分，仅供参考）
-          </DialogDescription>
-        </DialogHeader>
-        <View className="py-2">
-          <Text className="block text-base font-medium text-foreground">已经聊到的</Text>
-          {(summaryData?.covered?.length ?? 0) ? (
-            <View className="mt-2 flex flex-col gap-2">
-              {summaryData!.covered.map((t, i) => (
-                <View key={i} className="bg-secondary bg-opacity-70 rounded-lg px-3 py-2 flex flex-row items-start gap-2">
-                  <Text className="text-primary font-semibold mt-px">✓</Text>
-                  <Text className="block flex-1 text-base leading-relaxed text-foreground">{t}</Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text className="block text-base text-muted-foreground mt-1">—</Text>
-          )}
-          <Text className="block text-base font-medium text-foreground mt-3">可以再深入的</Text>
-          {(summaryData?.missed?.length ?? 0) ? (
-            <View className="mt-2 flex flex-col gap-2">
-              {summaryData!.missed.map((t, i) => (
-                <View key={i} className="bg-card border border-border rounded-lg px-3 py-2 flex flex-row items-start gap-2">
-                  <Text className="text-muted-foreground font-semibold mt-px">·</Text>
-                  <Text className="block flex-1 text-base leading-relaxed text-foreground">{t}</Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text className="block text-base text-muted-foreground mt-1">没有明显欠缺，可以结束</Text>
-          )}
+          </Text>
+
+          <View className="mt-3">
+            <Text className="block text-base font-semibold text-foreground">已经聊到的</Text>
+            {(summaryData?.covered?.length ?? 0) ? (
+              <View className="mt-2 flex flex-col gap-2">
+                {summaryData!.covered.map((t, i) => (
+                  <View key={i} className="bg-secondary bg-opacity-70 rounded-lg px-3 py-2 flex flex-row items-start gap-2">
+                    <Text className="text-primary font-semibold mt-px">✓</Text>
+                    <Text className="block flex-1 text-base leading-relaxed text-foreground">{t}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text className="block text-base text-muted-foreground mt-1">—</Text>
+            )}
+          </View>
+
+          <View className="mt-3">
+            <Text className="block text-base font-semibold text-foreground">可以再深入的</Text>
+            {(summaryData?.missed?.length ?? 0) ? (
+              <View className="mt-2 flex flex-col gap-2">
+                {summaryData!.missed.map((t, i) => (
+                  <View key={i} className="bg-card border border-border rounded-lg px-3 py-2 flex flex-row items-start gap-2">
+                    <Text className="text-muted-foreground font-semibold mt-px">·</Text>
+                    <Text className="block flex-1 text-base leading-relaxed text-foreground">{t}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text className="block text-base text-muted-foreground mt-1">没有明显欠缺，可以结束</Text>
+            )}
+          </View>
+
+          <View className="mt-4 flex flex-row gap-2">
+            <Button variant="outline" className="flex-1" onClick={keepTalking}>
+              <Text className="text-base">继续聊聊</Text>
+            </Button>
+            <Button className="flex-1" onClick={confirmEnd}>
+              <Text className="text-base">就到这里，去反馈</Text>
+            </Button>
+          </View>
         </View>
-        <DialogFooter className="flex flex-row gap-2">
-          <Button variant="outline" className="flex-1" onClick={keepTalking}>
-            <Text className="text-base">继续聊聊</Text>
-          </Button>
-          <Button className="flex-1" onClick={confirmEnd}>
-            <Text className="text-base">就到这里，去反馈</Text>
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </View>
+    )}
     </>
   )
 }
