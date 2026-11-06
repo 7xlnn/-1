@@ -6,9 +6,10 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
-# 仅复制依赖清单以利用缓存
+# 仅复制依赖清单与补丁以利用缓存
 COPY package.json pnpm-lock.yaml ./
 COPY server/package.json server/package.json
+COPY patches ./patches
 
 RUN pnpm install --frozen-lockfile
 
