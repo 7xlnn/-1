@@ -2,8 +2,9 @@
 FROM node:20-slim AS build
 WORKDIR /app
 
-# 启用 corepack 提供 pnpm
-RUN corepack enable
+# 启用 corepack 并固定 pnpm 版本（与本地一致，避免 frozen-lockfile 校验失败）
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
 # 仅复制依赖清单以利用缓存
 COPY package.json pnpm-lock.yaml ./
@@ -27,7 +28,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate || true
 
 # 复制构建产物与运行所需
 COPY --from=build /app/server/dist ./server/dist
