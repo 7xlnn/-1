@@ -26,7 +26,7 @@ let CbtService = CbtService_1 = class CbtService {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        model: options.model,
+                        model: process.env.ARK_MODEL_ID?.trim() || options.model,
                         messages,
                         temperature: options.temperature,
                     }),
