@@ -1,5 +1,6 @@
 # ---- 构建阶段：一次全量安装（含 devDependencies），避免二次 install 死锁 ---- 
-FROM node:20-slim AS build
+FROM node:24-slim AS build
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV NODE_ENV=development
 WORKDIR /app
 
@@ -25,7 +26,8 @@ RUN pnpm build:server
 EXPOSE 3000
 
 # ---- 运行阶段：直接复用构建产物，不再二次安装依赖 ----
-FROM node:20-slim AS runner
+FROM node:24-slim AS runner
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 WORKDIR /app
 
 ENV NODE_ENV=production
