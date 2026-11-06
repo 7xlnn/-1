@@ -10,7 +10,11 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 COPY package.json pnpm-lock.yaml ./
 COPY server/package.json server/package.json
 
-RUN pnpm install --frozen-lockfile
+# 构建阶段必须安装含 devDependencies（nest/typescript 均为 devDeps），
+# 否则 Railway 注入 NODE_ENV=production 时 --frozen-lockfile 默认跳过 devDeps 导致 `nest: not found`
+ENV NODE_ENV=development
+RUN pnpm install --frozen-lockfile --prod=false
+ENV NODE_ENV=production
 
 # 复制源码
 COPY . .
