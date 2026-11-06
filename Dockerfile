@@ -13,8 +13,9 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
-# 仅复制依赖清单以利用缓存
-COPY package.json pnpm-lock.yaml ./
+# 仅复制依赖清单以利用缓存。workspace 清单必须在安装前存在，
+# 否则 pnpm 不会识别 server 包，也就不会安装 NestJS 运行依赖。
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY server/package.json server/package.json
 
 # 全量安装运行依赖（--prod=false 确保 server 依赖完整；Node 24 slim 无 python3，导航扣子 supabase 运行时依赖为延迟加载）
