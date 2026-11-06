@@ -12,7 +12,43 @@ const common_1 = require("@nestjs/common");
 const coze_coding_dev_sdk_1 = require("coze-coding-dev-sdk");
 let CbtService = CbtService_1 = class CbtService {
     buildClient(forwardHeaders) {
-        return new coze_coding_dev_sdk_1.LLMClient(new coze_coding_dev_sdk_1.Config({ timeout: 60000 }), forwardHeaders);
+        const apiKey = process.env.ARK_API_KEY?.trim();
+        // Railway 等独立部署环境通过火山方舟 API 调用；Coze 本地环境继续透传原有鉴权头。
+        if (!apiKey) {
+            return new coze_coding_dev_sdk_1.LLMClient(new coze_coding_dev_sdk_1.Config({ timeout: 60000 }), forwardHeaders);
+        }
+        return {
+            invoke: async (messages, options) => {
+                const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: options.model,
+                        messages,
+                        temperature: options.temperature,
+                    }),
+                });
+                const raw = await response.text();
+                if (!response.ok) {
+                    console.error('[ARK] request failed:', response.status, raw);
+                    throw new Error(`豆包模型调用失败（HTTP ${response.status}）`);
+                }
+                let data;
+                try {
+                    data = JSON.parse(raw);
+                }
+                catch {
+                    throw new Error('豆包模型返回了无法解析的数据');
+                }
+                const content = data.choices?.[0]?.message?.content;
+                if (!content)
+                    throw new Error('豆包模型未返回有效内容');
+                return { content };
+            },
+        };
     }
     buildClientSystemPrompt(p) {
         const c = p.profile;
