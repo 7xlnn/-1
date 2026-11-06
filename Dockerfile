@@ -6,10 +6,9 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
-# 仅复制依赖清单与补丁以利用缓存
+# 仅复制依赖清单以利用缓存
 COPY package.json pnpm-lock.yaml ./
 COPY server/package.json server/package.json
-COPY patches ./patches
 
 RUN pnpm install --frozen-lockfile
 
@@ -34,7 +33,6 @@ RUN corepack enable && corepack prepare pnpm@9.15.9 --activate || true
 # 复制构建产物与运行所需
 COPY --from=build /app/server/dist ./server/dist
 COPY --from=build /app/dist-web ./dist-web
-COPY --from=build /app/.coze ./ 2>/dev/null || true
 COPY --from=build /app/node_modules ./node_modules
 
 # 启动后端服务（自动托管前端静态资源）

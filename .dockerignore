@@ -6,6 +6,6 @@ server/dist
 *.log
 .git
 .github
-.cozeproj
 .coze
 .tmp
+# 注意：.cozeproj 被 git 追踪且 build:web 依赖其脚本，不能排除
