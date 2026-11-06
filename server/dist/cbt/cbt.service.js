@@ -29,6 +29,10 @@ let CbtService = CbtService_1 = class CbtService {
                         model: process.env.ARK_MODEL_ID?.trim() || options.model,
                         messages,
                         temperature: options.temperature,
+                        // 角色扮演对话更重视响应速度；需要复杂推理时可设 ARK_THINKING_MODE=enabled。
+                        thinking: {
+                            type: process.env.ARK_THINKING_MODE === 'enabled' ? 'enabled' : 'disabled',
+                        },
                     }),
                 });
                 const raw = await response.text();
