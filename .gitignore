@@ -6,6 +6,11 @@ node_modules/
 dist/
 build/
 dist-*/
+# Railway 部署所需预构建产物（提交进 git，Dockerfile 直接 COPY 不再云端构建）
+!dist-web/
+!dist-web/**
+!server/dist/
+!server/dist/**
 
 # Misc
 .DS_Store

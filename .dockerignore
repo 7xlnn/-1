@@ -1,11 +1,12 @@
 node_modules
 server/node_modules
 dist
-dist-web
-server/dist
+dist-tt
 *.log
 .git
 .github
 .coze
 .tmp
-# 注意：.cozeproj 被 git 追踪且 build:web 依赖其脚本，不能排除
+# 说明：
+#  - .cozeproj 被 git 追踪且 build:web 依赖其脚本，不能排除
+#  - dist-web 与 server/dist 为预构建产物（提交进 git），必须在构建上下文中供 Dockerfile COPY，故不排除
