@@ -26,6 +26,15 @@ export interface SubmissionDetail extends SubmissionListItem {
 
 const BASE = '/api/homework'
 
+/** 教师口令由服务器校验，前端不会保存或内置任何口令。 */
+export async function loginTeacher(passcode: string): Promise<void> {
+  await Network.request({
+    url: `${BASE}/teacher/login`,
+    method: 'POST',
+    data: { passcode },
+  })
+}
+
 // 提交作业
 export async function submitHomework(params: {
   studentName: string
@@ -152,6 +161,22 @@ export async function fetchTeacherStats(): Promise<TeacherStats | null> {
   console.log('[homework] teacher stats response:', res.data)
   return (res.data as TeacherStats) ?? null
 }
+
+export interface RecoveredDraft {
+  key: string
+  data: string
+  updated_at: string
+}
+
+/** 教师端：仅查看浏览器本机缓存恢复的草稿，不会写入或删除数据。 */
+export async function fetchRecoveredDrafts(): Promise<RecoveredDraft[]> {
+  const res = await Network.request({
+    url: `${BASE}/teacher/recovered-drafts`,
+    method: 'GET',
+  })
+  return (res.data as { list: RecoveredDraft[] }).list ?? []
+}
+
 export async function deleteSubmission(id: number): Promise<void> {
   const res = await Network.request({
     url: `${BASE}/${id}`,

@@ -31,6 +31,19 @@ let HomeworkController = class HomeworkController {
     teacherStats() {
         return this.homework.stats();
     }
+    recoveredDrafts() {
+        return this.homework.listRecoveredDrafts();
+    }
+    teacherLogin(passcode) {
+        const expected = process.env.TEACHER_PASSCODE?.trim();
+        if (!expected) {
+            throw new common_1.BadRequestException('教师登录尚未配置');
+        }
+        if (!passcode || passcode.trim() !== expected) {
+            throw new common_1.UnauthorizedException('口令错误');
+        }
+        return { ok: true };
+    }
     detail(id) {
         return this.homework.detail(id);
     }
@@ -81,6 +94,19 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], HomeworkController.prototype, "teacherStats", null);
+__decorate([
+    (0, common_1.Get)('teacher/recovered-drafts'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], HomeworkController.prototype, "recoveredDrafts", null);
+__decorate([
+    (0, common_1.Post)('teacher/login'),
+    __param(0, (0, common_1.Body)('passcode')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], HomeworkController.prototype, "teacherLogin", null);
 __decorate([
     (0, common_1.Get)('detail/:id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),

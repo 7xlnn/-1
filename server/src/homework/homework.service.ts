@@ -32,6 +32,12 @@ export interface SubmissionRow {
   created_at: string
 }
 
+export interface RecoveredDraftRow {
+  key: string
+  data: string
+  updated_at: string
+}
+
 @Injectable()
 export class HomeworkService {
   private client() {
@@ -249,6 +255,19 @@ export class HomeworkService {
       .limit(500)
     if (error) throw new Error(`草稿读取失败: ${error.message}`)
     return { list: (data ?? []) as unknown[] }
+  }
+
+  // 教师查看从浏览器本机缓存恢复的草稿。恢复数据使用固定标识保存，
+  // 不混入正式作业 submissions，也不参与作业统计。
+  async listRecoveredDrafts() {
+    const { data, error } = await this.client()
+      .from('drafts')
+      .select('key, data, updated_at')
+      .eq('student_id', 'recovered-browser-20261107')
+      .order('updated_at', { ascending: false })
+      .limit(100)
+    if (error) throw new Error(`恢复草稿读取失败: ${error.message}`)
+    return { list: (data ?? []) as RecoveredDraftRow[] }
   }
 
   async draftDelete(studentId: string, key: string) {

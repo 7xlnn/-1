@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, ParseIntPipe, Query } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UnauthorizedException } from '@nestjs/common'
 import { HomeworkService, CreateSubmissionDto, GradeDto } from './homework.service'
 
 @Controller('homework')
@@ -27,6 +27,25 @@ export class HomeworkController {
   @Get('teacher/stats')
   teacherStats() {
     return this.homework.stats()
+  }
+
+  // 教师端：查看从本机缓存恢复的草稿（只读）
+  @Get('teacher/recovered-drafts')
+  recoveredDrafts() {
+    return this.homework.listRecoveredDrafts()
+  }
+
+  // 教师登录：口令仅保存在部署平台的环境变量中，绝不打进前端文件。
+  @Post('teacher/login')
+  teacherLogin(@Body('passcode') passcode: string) {
+    const expected = process.env.TEACHER_PASSCODE?.trim()
+    if (!expected) {
+      throw new BadRequestException('教师登录尚未配置')
+    }
+    if (!passcode || passcode.trim() !== expected) {
+      throw new UnauthorizedException('口令错误')
+    }
+    return { ok: true }
   }
 
   // 详情（学生/教师共用）

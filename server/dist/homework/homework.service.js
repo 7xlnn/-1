@@ -216,6 +216,17 @@ let HomeworkService = class HomeworkService {
             throw new Error(`草稿读取失败: ${error.message}`);
         return { list: (data ?? []) };
     }
+    async listRecoveredDrafts() {
+        const { data, error } = await this.client()
+            .from('drafts')
+            .select('key, data, updated_at')
+            .eq('student_id', 'recovered-browser-20261107')
+            .order('updated_at', { ascending: false })
+            .limit(100);
+        if (error)
+            throw new Error(`恢复草稿读取失败: ${error.message}`);
+        return { list: (data ?? []) };
+    }
     async draftDelete(studentId, key) {
         const sid = (studentId || '').trim();
         const k = (key || '').trim();

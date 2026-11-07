@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { fetchTeacherList, deleteSubmission, fetchTeacherStats, SubmissionListItem, SubmissionType, TeacherStats } from '@/services/homework'
+import { fetchTeacherList, deleteSubmission, fetchTeacherStats, fetchRecoveredDrafts, RecoveredDraft, SubmissionListItem, SubmissionType, TeacherStats } from '@/services/homework'
 import { useIdentity } from '@/store/identity'
 import { ClipboardCheck, ChevronRight, LogOut, Trash2, Users, FileCheck, Hourglass, Star, ChartColumn, ChartBarBig } from 'lucide-react-taro'
 
@@ -28,20 +28,23 @@ export default function TeacherPage() {
   const [pending, setPending] = useState<SubmissionListItem[]>([])
   const [graded, setGraded] = useState<SubmissionListItem[]>([])
   const [stats, setStats] = useState<TeacherStats | null>(null)
+  const [recoveredDrafts, setRecoveredDrafts] = useState<RecoveredDraft[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('pending')
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [p, g, s] = await Promise.all([
+      const [p, g, s, recovered] = await Promise.all([
         fetchTeacherList('pending'),
         fetchTeacherList('graded'),
         fetchTeacherStats(),
+        fetchRecoveredDrafts(),
       ])
       setPending(p)
       setGraded(g)
       setStats(s)
+      setRecoveredDrafts(recovered)
     } catch (e) {
       // ignore
     } finally {
@@ -358,6 +361,44 @@ export default function TeacherPage() {
     )
   }
 
+  const renderRecoveredDrafts = () => {
+    if (loading) {
+      return <View className="flex flex-col gap-3"><Skeleton className="h-24 w-full rounded-xl" /><Skeleton className="h-24 w-full rounded-xl" /></View>
+    }
+    if (recoveredDrafts.length === 0) {
+      return <View className="flex flex-col items-center gap-2 py-12"><ClipboardCheck size={36} color="#9AA19A" /><Text className="block text-sm text-muted-foreground">暂无已恢复草稿</Text></View>
+    }
+    return (
+      <ScrollView scrollY style={{ height: 'calc(100vh - 220px)' }} className="flex flex-col gap-3">
+        <View className="rounded-xl px-3 py-2 mb-3" style={{ backgroundColor: 'rgba(91,140,123,0.1)' }}>
+          <Text className="block text-xs" style={{ color: '#477362' }}>以下内容从浏览器本机缓存恢复，仅供查看，不计入正式作业。</Text>
+        </View>
+        {recoveredDrafts.map((draft) => {
+          let preview = '已恢复草稿内容'
+          let messageCount = 0
+          try {
+            const parsed = JSON.parse(draft.data) as { data?: { messages?: Array<{ content?: string }> }; messages?: Array<{ content?: string }> }
+            const messages = parsed.data?.messages ?? parsed.messages ?? []
+            messageCount = messages.length
+            const last = messages[messages.length - 1]?.content?.replace(/\s+/g, ' ').trim()
+            if (last) preview = last.slice(0, 80) + (last.length > 80 ? '…' : '')
+          } catch {
+            preview = draft.data.slice(0, 80)
+          }
+          return (
+            <Card key={draft.key}>
+              <CardContent className="p-4">
+                <Text className="block text-sm font-medium text-foreground mb-2">{draft.key}</Text>
+                <Text className="block text-sm text-muted-foreground mb-2">{preview}</Text>
+                <Text className="block text-xs text-muted-foreground">{formatTime(draft.updated_at)}{messageCount ? ` · ${messageCount} 条对话` : ''}</Text>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </ScrollView>
+    )
+  }
+
   return (
     <View className="min-h-screen bg-page">
       <View className="bg-primary px-4 pt-6 pb-5">
@@ -386,6 +427,7 @@ export default function TeacherPage() {
             <TabsTrigger value="overview">
               数据概览{stats && stats.overview.total > 0 ? ` (${stats.overview.total})` : ''}
             </TabsTrigger>
+            <TabsTrigger value="recovered">已恢复{recoveredDrafts.length > 0 ? ` (${recoveredDrafts.length})` : ''}</TabsTrigger>
           </TabsList>
           <TabsContent value="pending">
             <View className="pt-3">{renderList(pending, true)}</View>
@@ -404,6 +446,7 @@ export default function TeacherPage() {
               ) : renderOverview()}
             </View>
           </TabsContent>
+          <TabsContent value="recovered"><View className="pt-3">{renderRecoveredDrafts()}</View></TabsContent>
         </Tabs>
       </View>
     </View>

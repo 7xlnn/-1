@@ -5,11 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { useIdentity } from '@/store/identity'
+import { loginTeacher } from '@/services/homework'
 import { UI_ASSETS } from '@/data/ui-assets'
 import { UserRound, LockKeyhole, IdCard } from 'lucide-react-taro'
-
-/** 教师口令（统一修改入口）。仅设此处即可全局生效。 */
-export const TEACHER_PASSCODE = 'cbt2026'
 
 export default function IdentityPage() {
   const { role, studentName, studentNo, setRole, setStudentName, setStudentNo } = useIdentity()
@@ -46,15 +44,20 @@ export default function IdentityPage() {
   }
 
   // 教师登录：输入口令解锁（教师无需姓名）
-  const unlockTeacher = () => {
-    if (passcode.trim() === TEACHER_PASSCODE) {
+  const unlockTeacher = async () => {
+    if (!passcode.trim()) {
+      Taro.showToast({ title: '请输入教师口令', icon: 'none' })
+      return
+    }
+    try {
+      await loginTeacher(passcode.trim())
       setShowTeacher(true)
       setRole('teacher')
       setTeacherOpen(false)
       setPasscode('')
       Taro.showToast({ title: '教师身份已解锁', icon: 'success' })
-    } else {
-      Taro.showToast({ title: '口令错误', icon: 'none' })
+    } catch {
+      Taro.showToast({ title: '口令错误或教师登录未配置', icon: 'none' })
     }
   }
 
