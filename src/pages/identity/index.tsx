@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { useIdentity } from '@/store/identity'
 import { loginTeacher } from '@/services/homework'
+import { backupAllLocal } from '@/services/draft'
 import { UI_ASSETS } from '@/data/ui-assets'
 import { UserRound, LockKeyhole, IdCard } from 'lucide-react-taro'
 
@@ -16,6 +17,7 @@ export default function IdentityPage() {
   const [showTeacher, setShowTeacher] = useState(role === 'teacher')
   const [teacherOpen, setTeacherOpen] = useState(false)
   const [passcode, setPasscode] = useState('')
+  const [recovering, setRecovering] = useState(false)
   const isTeacher = role === 'teacher'
 
   const handleSave = () => {
@@ -33,6 +35,39 @@ export default function IdentityPage() {
     setStudentNo(no)
     Taro.showToast({ title: '已保存', icon: 'success' })
     setTimeout(() => Taro.navigateBack(), 500)
+  }
+
+  // 从当前设备/当前浏览器的本地缓存恢复学生草稿到云端。
+  const recoverLocalDrafts = () => {
+    const name = nameInput.trim()
+    const no = noInput.trim()
+    if (!no || !name) {
+      Taro.showToast({ title: '请先填写姓名和学号', icon: 'none' })
+      return
+    }
+    Taro.showModal({
+      title: '恢复本机练习数据',
+      content: '系统将把本机浏览器中发现的练习草稿上传到你填写的学号。请确认这是你本人曾使用的设备和浏览器。',
+      confirmText: '开始恢复',
+      success: async (modal) => {
+        if (!modal.confirm) return
+        setStudentName(name)
+        setStudentNo(no)
+        setRecovering(true)
+        try {
+          const result = await backupAllLocal()
+          if (result.found === 0) {
+            Taro.showToast({ title: '未发现本机练习草稿', icon: 'none' })
+          } else if (result.failed > 0) {
+            Taro.showToast({ title: `已恢复 ${result.uploaded}/${result.found} 条，请稍后重试失败项`, icon: 'none' })
+          } else {
+            Taro.showToast({ title: `已恢复 ${result.uploaded} 条本机草稿`, icon: 'success' })
+          }
+        } finally {
+          setRecovering(false)
+        }
+      },
+    })
   }
 
   const chooseRole = (r: 'student' | 'teacher') => {
@@ -140,9 +175,17 @@ export default function IdentityPage() {
               </View>
             </Button>
           ) : (
-            <Button className="w-full" onClick={handleSave}>
-              <Text className="block">保存</Text>
-            </Button>
+            <>
+              <Button className="w-full" onClick={handleSave}>
+                <Text className="block">保存</Text>
+              </Button>
+              <Button className="w-full" variant="outline" disabled={recovering} onClick={recoverLocalDrafts}>
+                <Text className="block">{recovering ? '正在恢复本机练习数据…' : '恢复本机练习数据'}</Text>
+              </Button>
+              <Text className="block text-xs text-muted-foreground text-center px-2">
+                仅适用于原手机或原浏览器仍保留草稿的情况；恢复不会删除本机内容。
+              </Text>
+            </>
           )}
         </View>
 

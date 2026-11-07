@@ -1,7 +1,6 @@
 import Taro from '@tarojs/taro'
 import { Network } from '@/network'
 import { useIdentity } from '@/store/identity'
-import { buildStorageKey, useSessionStore } from '@/store/session'
 import { useProgressStore } from '@/store/progress'
 
 /**
@@ -24,18 +23,24 @@ function sid(): string {
 }
 
 /** 单条 upsert 到云端 */
-async function upsert(key: string, data: unknown): Promise<void> {
+async function upsert(key: string, data: unknown): Promise<boolean> {
   const studentId = sid()
-  if (!studentId) return
+  if (!studentId) return false
   try {
     const res = await Network.request({
       url: BASE,
       method: 'POST',
       data: { studentId, key, data: JSON.stringify(data) },
     })
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      console.warn('[draft] upsert rejected', key, res.statusCode)
+      return false
+    }
     console.log('[draft] upsert ok', key, res.data)
+    return true
   } catch (e) {
     console.warn('[draft] upsert failed', key, e)
+    return false
   }
 }
 
@@ -49,10 +54,10 @@ function readLocal(key: string): unknown {
 }
 
 /** 把某 key 当前本地值推送到云端（本地无值则跳过） */
-export async function pushKey(key: string): Promise<void> {
+export async function pushKey(key: string): Promise<boolean> {
   const val = readLocal(key)
-  if (val === '' || val === null || val === undefined) return
-  await upsert(key, val)
+  if (val === '' || val === null || val === undefined) return false
+  return upsert(key, val)
 }
 
 /* ---------- 防抖批量推送（对话/进度高频写入时合并请求） ---------- */
@@ -133,17 +138,28 @@ export async function hydrateDrafts(): Promise<void> {
   useProgressStore.getState().reload()
 }
 
-/** 登录/切换身份后：把当前所有已知本地记录整批备份到云端（防丢） */
-export async function backupAllLocal(): Promise<void> {
-  const s = useSessionStore.getState()
-  const role = useIdentity.getState().role
-  // 当前会话 + 进度 + 情绪周记（含已提交标记）
-  const sessionKey = buildStorageKey(s.caseId, s.sessionIndex, s.fragmentId)
-  const keys = [
-    sessionKey,
-    'cbt:progress:records',
-    `my-mood-week-${role}`,
-    `my-mood-week-submitted-${role}`,
-  ]
-  for (const k of keys) await pushKey(k)
+/**
+ * 把当前设备可见的全部学生练习草稿备份到云端。
+ * 用于数据库异常后的自助恢复；只读取并上传，不删除本机内容。
+ */
+export async function backupAllLocal(): Promise<{ found: number; uploaded: number; failed: number }> {
+  let keys: string[] = []
+  try {
+    keys = Taro.getStorageInfoSync().keys
+      .filter((key) => key.startsWith('cbt:') || key === 'my-mood-week-student' || key === 'my-mood-week-submitted-student')
+  } catch {
+    return { found: 0, uploaded: 0, failed: 0 }
+  }
+
+  let found = 0
+  let uploaded = 0
+  let failed = 0
+  for (const key of keys) {
+    const value = readLocal(key)
+    if (value === '' || value === null || value === undefined) continue
+    found += 1
+    if (await upsert(key, value)) uploaded += 1
+    else failed += 1
+  }
+  return { found, uploaded, failed }
 }
