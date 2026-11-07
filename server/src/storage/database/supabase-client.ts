@@ -114,6 +114,21 @@ function getSupabaseClient(token?: string): SupabaseClient {
     } catch {
       // Silent — reporting setup failure should not block client creation
     }
+  } else {
+    // 保留底层网络错误，便于独立部署时诊断 Supabase 连通性；不会记录密钥。
+    globalOptions.fetch = async (...args: Parameters<typeof fetch>) => {
+      try {
+        return await fetch(...args);
+      } catch (error) {
+        const cause = (error as { cause?: unknown }).cause;
+        console.error('[SUPABASE] request failed', {
+          url,
+          message: error instanceof Error ? error.message : String(error),
+          cause,
+        });
+        throw error;
+      }
+    };
   }
 
   return createClient(url, key, {
