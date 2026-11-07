@@ -103,6 +103,23 @@ function getSupabaseClient(token) {
         catch {
         }
     }
+    else {
+        // 保留底层网络错误，便于独立部署时诊断 Supabase 连通性；不会记录密钥。
+        globalOptions.fetch = async (...args) => {
+            try {
+                return await fetch(...args);
+            }
+            catch (error) {
+                const cause = error?.cause;
+                console.error('[SUPABASE] request failed', {
+                    url,
+                    message: error instanceof Error ? error.message : String(error),
+                    cause,
+                });
+                throw error;
+            }
+        };
+    }
     return (0, supabase_js_1.createClient)(url, key, {
         global: globalOptions,
         db: {
