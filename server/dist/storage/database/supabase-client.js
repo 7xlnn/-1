@@ -92,13 +92,16 @@ function getSupabaseClient(token) {
     if (token) {
         globalOptions.headers = { Authorization: `Bearer ${token}` };
     }
-    try {
-        const buffer = (0, coze_coding_dev_sdk_1.getReportBuffer)();
-        if (buffer) {
-            globalOptions.fetch = (0, coze_coding_dev_sdk_1.createWrappedFetch)(buffer, 'supabase');
+    // Coze 的请求包装器依赖其内部服务地址；在 Railway 等独立环境中使用原生 fetch。
+    if (process.env.COZE_INTEGRATION_BASE_URL && process.env.COZE_API_TOKEN) {
+        try {
+            const buffer = (0, coze_coding_dev_sdk_1.getReportBuffer)();
+            if (buffer) {
+                globalOptions.fetch = (0, coze_coding_dev_sdk_1.createWrappedFetch)(buffer, 'supabase');
+            }
         }
-    }
-    catch {
+        catch {
+        }
     }
     return (0, supabase_js_1.createClient)(url, key, {
         global: globalOptions,
