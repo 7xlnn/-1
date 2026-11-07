@@ -29,12 +29,6 @@ export class HomeworkController {
     return this.homework.stats()
   }
 
-  // 教师端：查看从本机缓存恢复的草稿（只读）
-  @Get('teacher/recovered-drafts')
-  recoveredDrafts() {
-    return this.homework.listRecoveredDrafts()
-  }
-
   // 教师登录：口令仅保存在部署平台的环境变量中，绝不打进前端文件。
   @Post('teacher/login')
   teacherLogin(@Body('passcode') passcode: string) {

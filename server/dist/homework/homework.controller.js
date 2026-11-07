@@ -31,9 +31,6 @@ let HomeworkController = class HomeworkController {
     teacherStats() {
         return this.homework.stats();
     }
-    recoveredDrafts() {
-        return this.homework.listRecoveredDrafts();
-    }
     teacherLogin(passcode) {
         const expected = process.env.TEACHER_PASSCODE?.trim();
         if (!expected) {
@@ -94,12 +91,6 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], HomeworkController.prototype, "teacherStats", null);
-__decorate([
-    (0, common_1.Get)('teacher/recovered-drafts'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
-], HomeworkController.prototype, "recoveredDrafts", null);
 __decorate([
     (0, common_1.Post)('teacher/login'),
     __param(0, (0, common_1.Body)('passcode')),

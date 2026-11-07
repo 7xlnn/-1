@@ -162,21 +162,6 @@ export async function fetchTeacherStats(): Promise<TeacherStats | null> {
   return (res.data as TeacherStats) ?? null
 }
 
-export interface RecoveredDraft {
-  key: string
-  data: string
-  updated_at: string
-}
-
-/** 教师端：仅查看浏览器本机缓存恢复的草稿，不会写入或删除数据。 */
-export async function fetchRecoveredDrafts(): Promise<RecoveredDraft[]> {
-  const res = await Network.request({
-    url: `${BASE}/teacher/recovered-drafts`,
-    method: 'GET',
-  })
-  return (res.data as { list: RecoveredDraft[] }).list ?? []
-}
-
 export async function deleteSubmission(id: number): Promise<void> {
   const res = await Network.request({
     url: `${BASE}/${id}`,

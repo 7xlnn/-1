@@ -37,9 +37,6 @@ export declare class HomeworkController {
             byType: Record<string, number>;
         }[];
     }>;
-    recoveredDrafts(): Promise<{
-        list: import("./homework.service").RecoveredDraftRow[];
-    }>;
     teacherLogin(passcode: string): {
         ok: boolean;
     };
