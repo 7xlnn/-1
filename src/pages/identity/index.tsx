@@ -182,9 +182,6 @@ export default function IdentityPage() {
               <Button className="w-full" variant="outline" disabled={recovering} onClick={recoverLocalDrafts}>
                 <Text className="block">{recovering ? '正在恢复本机练习数据…' : '恢复本机练习数据'}</Text>
               </Button>
-              <Text className="block text-xs text-muted-foreground text-center px-2">
-                仅适用于原手机或原浏览器仍保留草稿的情况；恢复不会删除本机内容。
-              </Text>
             </>
           )}
         </View>
