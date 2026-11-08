@@ -26,11 +26,23 @@ const EMPTY: ConceptForm = {
   childhood: '', coreBelief: '', attitude: '', rule: '', assumption: '', coping: ''
 }
 
+const draftKeyFor = (id: string) => `cbt:concept:${id}`
+
+function loadDraft(id: string): ConceptForm {
+  try {
+    const raw = Taro.getStorageSync(draftKeyFor(id)) as { form?: ConceptForm } | ConceptForm | null
+    const form = raw && typeof raw === 'object' && 'form' in raw ? raw.form : raw
+    return form ? { ...EMPTY, ...form } : EMPTY
+  } catch {
+    return EMPTY
+  }
+}
+
 const ConceptualizationPage = () => {
   const router = useRouter()
   const ex = allExercises.find(e => e.id === router.params.id)
   const { messages, setPendingFeedback, setConceptForm } = useSessionStore()
-  const [form, setForm] = useState<ConceptForm>(EMPTY)
+  const [form, setForm] = useState<ConceptForm>(() => loadDraft(router.params.id || 'unknown'))
   const [submitting, setSubmitting] = useState(false)
 
   if (!ex) {
@@ -41,7 +53,20 @@ const ConceptualizationPage = () => {
     )
   }
 
-  const set = (k: keyof ConceptForm, v: string) => setForm(f => ({ ...f, [k]: v }))
+  const set = (k: keyof ConceptForm, v: string) => {
+    setForm((previous) => {
+      const next = { ...previous, [k]: v }
+      const key = draftKeyFor(ex.id)
+      try {
+        Taro.setStorageSync(key, { form: next, updatedAt: Date.now() })
+      } catch {
+        /* 本机存储不可用时仍允许继续填写 */
+      }
+      // 异步上传，不影响输入体验。
+      import('@/services/draft').then((m) => m.queuePush(key)).catch(() => undefined)
+      return next
+    })
+  }
 
   const handleSubmit = async () => {
     if (submitting) return
